@@ -1,0 +1,278 @@
+---
+globs: *.tsx,*.ts
+description: React Router v7 specific patterns and best practices
+---
+
+# React Router v7 Patterns
+
+## Route Configuration
+
+### Route Definition
+
+Define routes in [app/routes.ts](mdc:app/routes.ts) using the new v7 API:
+
+```typescript
+import {
+    type RouteConfig,
+    index,
+    route,
+    layout,
+} from "@react-router/dev/routes";
+
+export default [
+    index("/common/pages/home.tsx"),
+    route("about", "/common/pages/about.tsx"),
+    layout("/common/layouts/main.tsx", [
+        route("dashboard", "/features/dashboard/pages/Dashboard.tsx"),
+        route("profile", "/features/users/pages/Profile.tsx"),
+    ]),
+] satisfies RouteConfig;
+```
+
+### Nested Routes
+
+Use layout routes for shared UI:
+
+```typescript
+// app/common/layouts/main.tsx
+import { Outlet } from "react-router";
+
+export default function MainLayout() {
+  return (
+    <div className="min-h-screen bg-background">
+      <header className="border-b">
+        <nav className="container mx-auto px-4 py-4">
+          {/* Navigation */}
+        </nav>
+      </header>
+      <main className="container mx-auto px-4 py-8">
+        <Outlet />
+      </main>
+    </div>
+  );
+}
+```
+
+## Data Loading Patterns
+
+### Loader Functions
+
+Use loaders for data fetching:
+
+```typescript
+import type { Route } from "./+types/users";
+
+export const loader: Route.LoaderFunction = async ({ request }) => {
+  const url = new URL(request.url);
+  const search = url.searchParams.get("search");
+
+  // Fetch data based on search params
+  const users = await fetchUsers({ search });
+
+  return { users, search };
+};
+
+export default function UsersPage() {
+  const { users, search } = useLoaderData<typeof loader>();
+
+  return (
+    <div>
+      <h1>Users {search && `- ${search}`}</h1>
+      {/* Render users */}
+    </div>
+  );
+}
+```
+
+### Action Functions
+
+Handle form submissions and mutations:
+
+```typescript
+export const action: Route.ActionFunction = async ({ request }) => {
+    const formData = await request.formData();
+    const name = formData.get("name") as string;
+
+    try {
+        const user = await createUser({ name });
+        return redirect(`/users/${user.id}`);
+    } catch (error) {
+        return { error: "Failed to create user" };
+    }
+};
+```
+
+## Form Handling
+
+### Form Components
+
+Use React Router's form components for better UX:
+
+```typescript
+import { Form, useActionData, useNavigation } from "react-router";
+
+export default function UserForm() {
+  const actionData = useActionData<typeof action>();
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting";
+
+  return (
+    <Form method="post" className="space-y-4">
+      <div>
+        <label htmlFor="name" className="block text-sm font-medium">
+          Name
+        </label>
+        <input
+          id="name"
+          name="name"
+          type="text"
+          required
+          className="mt-1 block w-full rounded-md border border-input px-3 py-2"
+        />
+        {actionData?.error && (
+          <p className="mt-1 text-sm text-destructive">{actionData.error}</p>
+        )}
+      </div>
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="bg-primary text-primary-foreground px-4 py-2 rounded-md disabled:opacity-50"
+      >
+        {isSubmitting ? "Creating..." : "Create User"}
+      </button>
+    </Form>
+  );
+}
+```
+
+## Error Handling
+
+### Error Boundaries
+
+Implement error boundaries for each route:
+
+```typescript
+import { isRouteErrorResponse, useRouteError } from "react-router";
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return (
+      <div className="text-center py-8">
+        <h1 className="text-2xl font-bold text-destructive">
+          {error.status} {error.statusText}
+        </h1>
+        <p className="mt-2 text-muted-foreground">
+          {error.data || "Something went wrong"}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="text-center py-8">
+      <h1 className="text-2xl font-bold text-destructive">Oops!</h1>
+      <p className="mt-2 text-muted-foreground">
+        An unexpected error occurred
+      </p>
+    </div>
+  );
+}
+```
+
+## Navigation Patterns
+
+### Programmatic Navigation
+
+Use the `useNavigate` hook for programmatic navigation:
+
+```typescript
+import { useNavigate } from "react-router";
+
+export function UserCard({ user }: { user: User }) {
+  const navigate = useNavigate();
+
+  const handleEdit = () => {
+    navigate(`/users/${user.id}/edit`);
+  };
+
+  const handleView = () => {
+    navigate(`/users/${user.id}`, { replace: true });
+  };
+
+  return (
+    <div className="border rounded-lg p-4">
+      <h3>{user.name}</h3>
+      <div className="mt-4 space-x-2">
+        <button onClick={handleView}>View</button>
+        <button onClick={handleEdit}>Edit</button>
+      </div>
+    </div>
+  );
+}
+```
+
+### Link Components
+
+Use the `Link` component for navigation:
+
+```typescript
+import { Link } from "react-router";
+
+export function Navigation() {
+  return (
+    <nav className="space-x-4">
+      <Link to="/" className="text-foreground hover:text-primary">
+        Home
+      </Link>
+      <Link to="/about" className="text-foreground hover:text-primary">
+        About
+      </Link>
+      <Link to="/users" className="text-foreground hover:text-primary">
+        Users
+      </Link>
+    </nav>
+  );
+}
+```
+
+## Search Params & URL State
+
+### Reading Search Params
+
+```typescript
+import { useSearchParams } from "react-router";
+
+export default function SearchPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const query = searchParams.get("q") || "";
+
+  const handleSearch = (newQuery: string) => {
+    setSearchParams({ q: newQuery });
+  };
+
+  return (
+    <div>
+      <input
+        type="text"
+        value={query}
+        onChange={(e) => handleSearch(e.target.value)}
+        placeholder="Search..."
+        className="w-full px-3 py-2 border rounded-md"
+      />
+    </div>
+  );
+}
+```
+
+## Best Practices
+
+1. **Use type-safe loaders and actions** with generated types
+2. **Handle loading states** with `useNavigation`
+3. **Implement proper error boundaries** for each route
+4. **Use forms for mutations** instead of manual fetch calls
+5. **Leverage nested routes** for shared layouts
+6. **Handle search params** for filterable lists
+7. **Use redirects** after successful mutations
+8. **Implement optimistic updates** for better UX

@@ -1,0 +1,46 @@
+---
+alwaysApply: true
+description: Project structure and architecture guidelines for the wemake React Router v7 application
+---
+
+# Project Structure Guide
+
+This is a React Router v7 application with TypeScript, Tailwind CSS, and shadcn/ui components.
+
+## Core Architecture
+
+- **Entry Point**: [app/root.tsx](mdc:app/root.tsx) - Main application layout and error boundary
+- **Routing**: [app/routes.ts](mdc:app/routes.ts) - Route configuration using React Router v7
+- **Styling**: [app/app.css](mdc:app/app.css) - Global styles with Tailwind CSS and custom theme
+- **Configuration**: [vite.config.ts](mdc:vite.config.ts) - Vite build configuration
+- **TypeScript**: [tsconfig.json](mdc:tsconfig.json) - TypeScript configuration with path mapping
+
+## Directory Structure
+
+```
+app/
+├── common/           # Shared components and pages
+│   ├── components/   # Reusable UI components
+│   └── pages/        # Common page components
+├── features/         # Feature-based modules
+│   └── users/        # User-related features
+│       ├── components/
+│       └── pages/
+├── lib/              # Utility functions and helpers
+│   └── utils.ts      # Common utilities (cn function for class merging)
+└── welcome/          # Welcome/landing page assets
+```
+
+## Key Principles
+
+1. **Feature-based organization**: Group related components, pages, and logic by feature
+2. **Shared components**: Place reusable components in `app/common/components/`
+3. **Path aliases**: Use `~/` prefix for imports from the app directory
+4. **Type safety**: Leverage TypeScript for all components and utilities
+5. **Component composition**: Build complex UIs by composing smaller, focused components
+
+## Import Patterns
+
+- Use `~/` for app directory imports: `import { cn } from "~/lib/utils"`
+- Use relative imports for same-directory files
+- Import types with `type` keyword: `import type { Route } from "./+types/home"`

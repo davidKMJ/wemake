@@ -1,0 +1,111 @@
+---
+globs: *.css,*.tsx,*.ts
+description: Tailwind CSS and styling guidelines for the wemake application
+---
+
+# Tailwind CSS & Styling Guidelines
+
+## Tailwind CSS Configuration
+
+This project uses **Tailwind CSS v4** with a custom theme defined in [app/app.css](mdc:app/app.css).
+
+### Theme Variables
+
+The project uses CSS custom properties for theming:
+
+- **Base colors**: Defined in `:root` for light mode
+- **Dark mode**: Defined in `.dark` class
+- **Color system**: Uses OKLCH color space for better color consistency
+- **Radius system**: Custom radius scale with `--radius` base value
+
+### Class Merging Utility
+
+Use the `cn` utility from [app/lib/utils.ts](mdc:app/lib/utils.ts) for conditional classes:
+
+```typescript
+import { cn } from "~/lib/utils";
+
+// Merge classes with conditional logic
+const buttonClass = cn(
+    "px-4 py-2 rounded-md",
+    variant === "primary" && "bg-primary text-primary-foreground",
+    disabled && "opacity-50 cursor-not-allowed",
+    className
+);
+```
+
+## Styling Patterns
+
+### Component Styling
+
+1. **Use semantic class names** that describe purpose, not appearance
+2. **Leverage the design system** defined in the CSS variables
+3. **Use responsive prefixes** for mobile-first design
+4. **Apply dark mode** using the `.dark` class on the html element
+
+### Color Usage
+
+```typescript
+// Use semantic color names from the theme
+<div className="bg-background text-foreground">
+  <div className="bg-card text-card-foreground border border-border">
+    <button className="bg-primary text-primary-foreground hover:bg-primary/90">
+      Primary Action
+    </button>
+  </div>
+</div>
+```
+
+### Layout Patterns
+
+```typescript
+// Container with responsive padding
+<div className="container mx-auto px-4 py-8">
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {/* Grid content */}
+  </div>
+</div>
+
+// Flexbox utilities
+<div className="flex items-center justify-between">
+  <h1 className="text-2xl font-bold">Title</h1>
+  <button className="px-4 py-2">Action</button>
+</div>
+```
+
+## shadcn/ui Integration
+
+The project is configured for shadcn/ui components in [components.json](mdc:components.json):
+
+### Component Aliases
+
+- `~/common/components` - Main components directory
+- `~/common/components/ui` - shadcn/ui components
+- `~/lib/utils` - Utility functions
+- `~/hooks` - Custom React hooks
+
+### Component Styling
+
+When creating or modifying shadcn/ui components:
+
+1. **Use the cn utility** for class merging
+2. **Follow the variant pattern** with class-variance-authority
+3. **Maintain design system consistency** with theme variables
+4. **Use proper TypeScript types** for component props
+
+## Dark Mode Implementation
+
+The application uses a class-based dark mode approach:
+
+- **HTML class**: `.dark` class on the `<html>` element
+- **CSS variables**: Automatically switch based on the class
+- **Component styling**: Use semantic color names that adapt to the theme
+
+## Best Practices
+
+1. **Mobile-first responsive design** using Tailwind's responsive prefixes
+2. **Consistent spacing** using the default spacing scale
+3. **Semantic color usage** rather than arbitrary color values
+4. **Component composition** over utility class repetition
+5. **Accessibility** with proper focus states and contrast ratios
+6. **Performance** by purging unused styles in production builds

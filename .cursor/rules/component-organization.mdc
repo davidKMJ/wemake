@@ -1,0 +1,192 @@
+---
+globs: *.tsx,*.ts
+description: Component and file organization guidelines for React components
+---
+
+# Component & File Organization Guidelines
+
+## Component Structure
+
+### File Naming Conventions
+
+- **Components**: PascalCase (e.g., `UserProfile.tsx`, `NavigationMenu.tsx`)
+- **Pages**: PascalCase (e.g., `Home.tsx`, `About.tsx`)
+- **Utilities**: camelCase (e.g., `formatDate.ts`, `apiClient.ts`)
+- **Types**: PascalCase with `.types.ts` suffix (e.g., `User.types.ts`)
+
+### Component File Structure
+
+```typescript
+// 1. Imports (external libraries first, then internal)
+import React from "react";
+import { cn } from "~/lib/utils";
+import type { ComponentProps } from "./Component.types";
+
+// 2. Type definitions (if not in separate file)
+interface ComponentProps {
+  // prop definitions
+}
+
+// 3. Component implementation
+export function Component({ prop1, prop2 }: ComponentProps) {
+  // component logic
+  return (
+    <div className={cn("base-classes", prop1 && "conditional-classes")}>
+      {/* JSX content */}
+    </div>
+  );
+}
+
+// 4. Default export (if needed)
+export default Component;
+```
+
+## Directory Organization
+
+### Feature-Based Structure
+
+```
+app/features/users/
+├── components/
+│   ├── UserCard.tsx
+│   ├── UserList.tsx
+│   └── UserForm.tsx
+├── pages/
+│   ├── UserProfile.tsx
+│   └── UserSettings.tsx
+├── hooks/
+│   └── useUser.ts
+├── services/
+│   └── userApi.ts
+└── types/
+    └── User.types.ts
+```
+
+### Shared Components
+
+```
+app/common/components/
+├── ui/                    # shadcn/ui components
+│   ├── button.tsx
+│   ├── input.tsx
+│   └── card.tsx
+├── layout/               # Layout components
+│   ├── Header.tsx
+│   ├── Sidebar.tsx
+│   └── Footer.tsx
+└── forms/                # Form components
+    ├── ContactForm.tsx
+    └── SearchForm.tsx
+```
+
+## Component Patterns
+
+### Functional Components
+
+Always use functional components with TypeScript:
+
+```typescript
+interface ButtonProps {
+  variant?: "primary" | "secondary" | "destructive";
+  size?: "sm" | "md" | "lg";
+  children: React.ReactNode;
+  onClick?: () => void;
+  className?: string;
+}
+
+export function Button({
+  variant = "primary",
+  size = "md",
+  children,
+  onClick,
+  className
+}: ButtonProps) {
+  return (
+    <button
+      className={cn(
+        "inline-flex items-center justify-center rounded-md font-medium transition-colors",
+        {
+          "bg-primary text-primary-foreground hover:bg-primary/90": variant === "primary",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80": variant === "secondary",
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90": variant === "destructive",
+        },
+        {
+          "h-9 px-3 text-sm": size === "sm",
+          "h-10 px-4 py-2": size === "md",
+          "h-11 px-8 text-lg": size === "lg",
+        },
+        className
+      )}
+      onClick={onClick}
+    >
+      {children}
+    </button>
+  );
+}
+```
+
+### Page Components
+
+Structure page components for React Router v7:
+
+```typescript
+import type { Route } from "./+types/page-name";
+
+// Loader function
+export const loader: Route.LoaderFunction = async ({ request }) => {
+  // data fetching logic
+  return { data };
+};
+
+// Action function
+export const action: Route.ActionFunction = async ({ request }) => {
+  // form handling logic
+  return { success: true };
+};
+
+// Page component
+export default function PageName() {
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold">Page Title</h1>
+      {/* page content */}
+    </div>
+  );
+}
+
+// Error boundary
+export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+  return <div>Error: {error.message}</div>;
+}
+```
+
+## Import Organization
+
+### Import Order
+
+1. **React and React Router imports**
+2. **Third-party libraries** (alphabetical)
+3. **Internal utilities** (using `~/` alias)
+4. **Relative imports** (components, types, etc.)
+5. **Type-only imports** (with `type` keyword)
+
+```typescript
+import React from "react";
+import { Link, useLoaderData } from "react-router";
+import { clsx } from "clsx";
+import { cn } from "~/lib/utils";
+import { Button } from "~/common/components/ui/button";
+import type { User } from "./User.types";
+import { UserCard } from "./UserCard";
+```
+
+## Best Practices
+
+1. **Single Responsibility**: Each component should have one clear purpose
+2. **Composition over Inheritance**: Build complex UIs by composing smaller components
+3. **Props Interface**: Always define explicit prop interfaces
+4. **Default Props**: Use default parameters instead of defaultProps
+5. **Memoization**: Use React.memo for expensive components when needed
+6. **Error Boundaries**: Implement error boundaries for route components
+7. **Accessibility**: Include proper ARIA attributes and keyboard navigation
+8. **Testing**: Write components with testing in mind (testable props and behavior)

@@ -1,0 +1,183 @@
+---
+alwaysApply: true
+description: Development workflow and best practices for the wemake project
+---
+
+# Development Workflow & Best Practices
+
+## Development Environment
+
+### Available Scripts
+
+- `npm run dev` - Start development server with hot reload
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run typecheck` - Run TypeScript type checking
+
+### Development Server
+
+The project uses Vite with React Router v7 for fast development:
+
+- **Hot Module Replacement (HMR)** for instant updates
+- **TypeScript checking** integrated with the build process
+- **Path mapping** with `~/*` aliases for clean imports
+
+## Code Quality Standards
+
+### TypeScript Configuration
+
+Follow the strict TypeScript settings in [tsconfig.json](mdc:tsconfig.json):
+
+- **Strict mode enabled** for better type safety
+- **No implicit any** - always provide explicit types
+- **Strict null checks** - handle null/undefined cases
+- **Path mapping** for clean import statements
+
+### Code Formatting
+
+- **Consistent indentation** (2 spaces)
+- **Semicolons** at the end of statements
+- **Trailing commas** in objects and arrays
+- **Single quotes** for strings (when possible)
+- **Meaningful variable names** that describe purpose
+
+### Import/Export Patterns
+
+```typescript
+// Prefer named exports for utilities
+export function formatDate(date: Date): string {}
+
+// Use default exports for main components
+export default function HomePage() {}
+
+// Group related exports
+export { Button, Input, Card } from "./ui";
+```
+
+## Git Workflow
+
+### Commit Messages
+
+Use conventional commit format:
+
+```
+feat: add user authentication system
+fix: resolve navigation menu overflow issue
+docs: update API documentation
+style: format code with prettier
+refactor: extract common button component
+test: add unit tests for user service
+```
+
+### Branch Naming
+
+- `feature/description` - New features
+- `fix/description` - Bug fixes
+- `refactor/description` - Code refactoring
+- `docs/description` - Documentation updates
+
+## Performance Guidelines
+
+### React Performance
+
+1. **Use React.memo** for expensive components
+2. **Implement useMemo/useCallback** for expensive calculations
+3. **Lazy load** route components when appropriate
+4. **Optimize re-renders** by minimizing prop changes
+
+### Bundle Optimization
+
+1. **Code splitting** at route level
+2. **Tree shaking** unused code
+3. **Image optimization** for web performance
+4. **Lazy loading** for non-critical resources
+
+## Testing Strategy
+
+### Component Testing
+
+- **Unit tests** for utility functions
+- **Component tests** for UI behavior
+- **Integration tests** for user workflows
+- **Accessibility tests** for WCAG compliance
+
+### Testing Patterns
+
+```typescript
+// Test utility functions
+describe("formatDate", () => {
+  it("should format date correctly", () => {
+    const date = new Date("2024-01-15");
+    expect(formatDate(date)).toBe("Jan 15, 2024");
+  });
+});
+
+// Test component behavior
+describe("Button", () => {
+  it("should call onClick when clicked", () => {
+    const handleClick = jest.fn();
+    render(<Button onClick={handleClick}>Click me</Button>);
+    fireEvent.click(screen.getByRole("button"));
+    expect(handleClick).toHaveBeenCalledTimes(1);
+  });
+});
+```
+
+## Security Best Practices
+
+### Input Validation
+
+- **Validate all user inputs** on both client and server
+- **Sanitize data** before rendering
+- **Use TypeScript** for compile-time type checking
+- **Implement proper error handling**
+
+### Authentication & Authorization
+
+- **Secure token storage** (httpOnly cookies preferred)
+- **Validate permissions** on every request
+- **Implement proper logout** functionality
+- **Use HTTPS** in production
+
+## Deployment Guidelines
+
+### Build Process
+
+1. **Type checking** before build
+2. **Linting** and code formatting
+3. **Testing** all test suites
+4. **Production build** optimization
+5. **Asset optimization** and compression
+
+### Environment Configuration
+
+- **Environment variables** for configuration
+- **Separate configs** for dev/staging/production
+- **Secure secrets** management
+- **Feature flags** for gradual rollouts
+
+## Documentation Standards
+
+### Code Documentation
+
+- **JSDoc comments** for complex functions
+- **README files** for each major feature
+- **API documentation** for external interfaces
+- **Component stories** for UI components
+
+### Inline Comments
+
+```typescript
+/**
+ * Formats a date object into a human-readable string
+ * @param date - The date to format
+ * @param format - The output format (default: 'short')
+ * @returns Formatted date string
+ */
+export function formatDate(
+    date: Date,
+    format: "short" | "long" = "short"
+): string {
+    // Implementation details
+}
+```

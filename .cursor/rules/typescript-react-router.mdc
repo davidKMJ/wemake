@@ -1,0 +1,109 @@
+---
+globs: *.ts,*.tsx
+description: TypeScript and React Router v7 specific coding guidelines
+---
+
+# TypeScript & React Router v7 Guidelines
+
+## TypeScript Best Practices
+
+### Type Imports
+
+Always use `type` keyword for type-only imports:
+
+```typescript
+import type { Route } from "./+types/home";
+import type { ClassValue } from "clsx";
+```
+
+### Component Props
+
+Define explicit prop types for all components:
+
+```typescript
+interface ComponentProps {
+    title: string;
+    children: React.ReactNode;
+    className?: string;
+}
+
+export function Component({ title, children, className }: ComponentProps) {
+    // component implementation
+}
+```
+
+### Route Types
+
+Use React Router v7's generated types:
+
+```typescript
+import type { Route } from "./+types/route-name";
+
+// For route components
+export default function RouteComponent() {
+  return <div>Route content</div>;
+}
+
+// For route functions (loaders, actions, etc.)
+export const loader: Route.LoaderFunction = async ({ request }) => {
+  // loader implementation
+};
+```
+
+## React Router v7 Patterns
+
+### Route Configuration
+
+Define routes in [app/routes.ts](mdc:app/routes.ts):
+
+```typescript
+import { type RouteConfig, index, route } from "@react-router/dev/routes";
+
+export default [
+    index("/common/pages/home.tsx"),
+    route("about", "/common/pages/about.tsx"),
+] satisfies RouteConfig;
+```
+
+### Route Functions
+
+Implement route functions with proper typing:
+
+```typescript
+// Loader function
+export const loader: Route.LoaderFunction = async ({ request }) => {
+    const url = new URL(request.url);
+    const search = url.searchParams.get("search");
+    return { search };
+};
+
+// Action function
+export const action: Route.ActionFunction = async ({ request }) => {
+    const formData = await request.formData();
+    // handle form submission
+    return { success: true };
+};
+```
+
+### Error Boundaries
+
+Use the error boundary pattern from [app/root.tsx](mdc:app/root.tsx):
+
+```typescript
+export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+  if (isRouteErrorResponse(error)) {
+    return <div>Route Error: {error.status}</div>;
+  }
+  return <div>Unexpected Error</div>;
+}
+```
+
+## Type Safety Rules
+
+1. **Always define return types** for functions that return values
+2. **Use strict TypeScript settings** as configured in [tsconfig.json](mdc:tsconfig.json)
+3. **Leverage path mapping** with `~/*` for clean imports
+4. **Type all props** including optional ones with `?`
+5. **Use React.ReactNode** for children props
+6. **Prefer interfaces** over types for object shapes
+7. **Use satisfies** for type assertions that preserve literal types
