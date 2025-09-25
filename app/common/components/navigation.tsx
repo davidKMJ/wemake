@@ -99,7 +99,7 @@ const menus = [
             {
                 name: "Discussions",
                 description: "Discuss with other users in your community",
-                to: "/community/discussions",
+                to: "/community",
             },
             {
                 name: "All Posts",

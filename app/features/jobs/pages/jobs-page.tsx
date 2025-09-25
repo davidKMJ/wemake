@@ -1,0 +1,8 @@
+export default function JobsPage() {
+    return (
+        <div className="container mx-auto px-4 py-8">
+            <h1 className="text-3xl font-bold">Jobs</h1>
+            <p>Jobs page content</p>
+        </div>
+    );
+}
