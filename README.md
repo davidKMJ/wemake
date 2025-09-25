@@ -1,6 +1,6 @@
 # wemake
 
-A React Router v7 learning project exploring modern web development with Supabase, CursorAI, Shadcn/ui, and Cloudflare.
+A React Router v7 project for makers featuring products, ideas, jobs, teams, and community discussions. Exploring web development with Supabase, CursorAI, Shadcn/ui, and Cloudflare.
 
 ## How to Start
 
@@ -8,13 +8,13 @@ A React Router v7 learning project exploring modern web development with Supabas
 
 - Node.js 18+ installed
 - Git for version control
-- CursorAI (optional but recommended for the best experience)
+- CursorAI (optional)
 
 ### Quick Start
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/davidKMJ/wemake.git
 cd wemake
 
 # Install dependencies
@@ -49,22 +49,40 @@ wemake/
 │   │   │   ├── navigation.tsx    # Main navigation component
 │   │   │   └── ui/               # Shadcn/ui component library
 │   │   │       ├── avatar.tsx    # Avatar component with Radix UI
+│   │   │       ├── badge.tsx     # Badge component with variants
 │   │   │       ├── button.tsx    # Button component with variants
+│   │   │       ├── card.tsx      # Card component with header, content, footer
 │   │   │       ├── dropdown-menu.tsx # Dropdown menu component
 │   │   │       ├── navigation-menu.tsx # Navigation menu component
 │   │   │       └── separator.tsx # Separator component
 │   │   └── pages/                # Common page components
-│   │       └── home-page.tsx     # Home page component
+│   │       └── home-page.tsx     # Home page with featured content
 │   ├── features/                 # Feature-based modules
-│   │   └── users/                # User-related features
+│   │   ├── auth/                 # Authentication features
+│   │   │   ├── layouts/          # Auth layout components
+│   │   │   └── pages/            # Login, join, OTP pages
+│   │   ├── community/            # Community discussions
+│   │   │   ├── components/       # Post cards and UI components
+│   │   │   └── pages/            # Community and post pages
+│   │   ├── ideas/                # Ideas and brainstorming
+│   │   │   ├── components/       # Idea cards and UI components
+│   │   │   └── pages/            # Ideas listing and detail pages
+│   │   ├── jobs/                 # Job listings and opportunities
+│   │   │   ├── components/       # Job cards and UI components
+│   │   │   └── pages/            # Job listings and detail pages
+│   │   ├── products/             # Product showcase and leaderboards
+│   │   │   ├── components/       # Product cards and UI components
+│   │   │   ├── layouts/          # Product and leaderboard layouts
+│   │   │   └── pages/            # Products, leaderboards, categories
+│   │   ├── teams/                # Team formation and collaboration
+│   │   │   ├── components/       # Team cards and UI components
+│   │   │   └── pages/            # Team listings and detail pages
+│   │   └── users/                # User profiles and dashboard
 │   │       ├── components/       # User-specific components
-│   │       └── pages/            # User-specific pages
-│   ├── lib/                      # Utility functions and helpers
-│   │   └── utils.ts              # Common utilities (cn function)
-│   └── welcome/                  # Welcome/landing page assets
-│       ├── logo-dark.svg         # Dark mode logo
-│       ├── logo-light.svg        # Light mode logo
-│       └── welcome.tsx           # Welcome component
+│   │       ├── layouts/          # Dashboard and profile layouts
+│   │       └── pages/            # User dashboard and profile pages
+│   └── lib/                      # Utility functions and helpers
+│       └── utils.ts              # Common utilities (cn function)
 ├── components.json               # Shadcn/ui configuration
 ├── package.json                  # Dependencies and scripts
 ├── react-router.config.ts        # React Router configuration
@@ -73,10 +91,19 @@ wemake/
 └── README.md                     # Project documentation
 ```
 
-### Key Architectural Decisions
+### Key Features
 
-1. **Feature-based organization** - Components grouped by functionality
-2. **Shared components** - Reusable UI components in `common/components/`
-3. **Type-safe routing** - React Router v7 with TypeScript integration
-4. **Design system** - Shadcn/ui with custom Tailwind theme
-5. **Development workflow** - CursorAI integration for enhanced productivity
+1. **Multi-domain platform** - Products, ideas, jobs, teams, and community discussions
+2. **Feature-based organization** - Components grouped by functionality
+3. **UI components** - Card-based layouts with badges, avatars, and interactive elements
+4. **Type-safe routing** - React Router v7 with TypeScript integration
+5. **Design system** - Shadcn/ui with custom Tailwind theme
+6. **Home page** - Featured content sections with navigation to major features
+
+### Technical Stack
+
+- **React Router v7** - Routing with type safety
+- **TypeScript** - Static type checking
+- **Tailwind CSS** - Utility-first CSS framework
+- **Shadcn/ui** - Component library built on Radix UI
+- **Vite** - Build tool and development server
