@@ -1,12 +1,22 @@
-import { useParams } from "react-router";
+import { data, redirect } from "react-router";
+import type { Route } from "./+types/leaderboards-redirection-page";
+import { DateTime } from "luxon";
 
-export default function LeaderboardsRedirectionPage() {
-  const { period } = useParams();
-  
-  return (
-    <div>
-      <h1 className="text-3xl font-bold">Leaderboard Period: {period}</h1>
-      <p>Leaderboard redirection page for period: {period}</p>
-    </div>
-  );
-}
+export const loader = ({ params }: Route.LoaderArgs) => {
+    const { period } = params;
+    let url: string;
+    const today = DateTime.now().setZone("America/New_York");
+    if (period === "daily") {
+        url = `/products/leaderboards/daily/${today.year}/${today.month}/${today.day}`;
+    } else if (period === "weekly") {
+        url = `/products/leaderboards/weekly/${today.year}/${today.weekNumber}`;
+    } else if (period === "monthly") {
+        url = `/products/leaderboards/monthly/${today.year}/${today.month}`;
+    } else if (period === "yearly") {
+        url = `/products/leaderboards/yearly/${today.year}`;
+    } else {
+        throw data(null, { status: 400 });
+    }
+    return redirect(url);
+};
+
