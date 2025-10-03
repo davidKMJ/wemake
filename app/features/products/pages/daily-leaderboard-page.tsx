@@ -5,7 +5,7 @@ import { z } from "zod";
 import { HeroSection } from "~/common/components/hero-section";
 import { ProductCard } from "../components/product-card";
 import { Button } from "~/common/components/ui/button";
-import ProductPagination from "~/common/components/pagination";
+import ProductPagination from "~/common/components/product-pagination";
 
 const paramsSchema = z.object({
     year: z.coerce.number(),
@@ -13,8 +13,13 @@ const paramsSchema = z.object({
     day: z.coerce.number(),
 });
 
-export const meta: Route.MetaFunction = () => {
-	return [{ title: "Daily Leaderboard | wemake" }];
+export const meta: Route.MetaFunction = ({ params}) => {
+    const date = DateTime.fromObject({
+        year: Number(params.year),
+        month: Number(params.month),
+        day: Number(params.day),
+    });
+    return [{ title: `Best products of ${date.toLocaleString(DateTime.DATE_MED)} | wemake` }];
 };
 
 export const loader = async ({ params, request }: Route.LoaderArgs) => {
@@ -77,7 +82,7 @@ export default function DailyLeaderboardPage({
     return (
         <div className="space-y-10">
             <HeroSection
-                title={`The best products of ${urlDate.toLocaleString(
+                title={`Best products of ${urlDate.toLocaleString(
                     DateTime.DATE_MED
                 )}`}
             />

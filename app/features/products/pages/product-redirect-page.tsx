@@ -1,12 +1,13 @@
-import { useParams } from "react-router";
+import { redirect } from "react-router";
+import type { Route } from "./+types/product-redirect-page";
 
-export default function ProductRedirectPage() {
-  const { productId } = useParams();
-  
-  return (
-    <div>
-      <h1 className="text-3xl font-bold">Product {productId}</h1>
-      <p>Product redirect page for {productId}</p>
-    </div>
-  );
+export const meta: Route.MetaFunction = () => {
+    return [
+        { title: "Product | wemake" },
+        { name: "description", content: "Product details" },
+    ];
+};
+
+export function loader({ params }: Route.LoaderArgs) {
+    return redirect(`/products/${params.productId}/overview`);
 }

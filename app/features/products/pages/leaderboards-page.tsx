@@ -120,7 +120,7 @@ export default function LeaderboardsPage({ loaderData }: Route.ComponentProps) {
                     />
                 ))}
                 <Button variant="link" asChild className="text-lg self-center">
-                    <Link to="/products/leaderboards/daily">
+                    <Link to="/products/leaderboards/yearly">
                         View all products &rarr;
                     </Link>
                 </Button>

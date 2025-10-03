@@ -1,12 +1,21 @@
-import { useParams } from "react-router";
+
+import { useOutletContext } from "react-router";
 
 export default function ProductOverviewPage() {
-  const { productId } = useParams();
-  
-  return (
-    <div>
-      <h1 className="text-3xl font-bold">Product Overview: {productId}</h1>
-      <p>Product overview content for {productId}</p>
-    </div>
-  );
+    const { description, how_it_works } = useOutletContext<{
+        description: string;
+        how_it_works: string;
+    }>();
+    return (
+        <div className="space-y-10">
+            <div className="space-y-2">
+                <h3 className="text-2xl font-bold">What is this product?</h3>
+                <p className="text-sm text-muted-foreground">{description}</p>
+            </div>
+            <div className="space-y-2">
+                <h3 className="text-2xl font-bold">How does it work?</h3>
+                <p className="text-sm text-muted-foreground">{how_it_works}</p>
+            </div>
+        </div>
+    );
 }
