@@ -1,12 +1,26 @@
-import { useParams } from "react-router";
+import { ProductCard } from "~/features/products/components/product-card";
+import type { Route } from "./+types/profile-products-page";
+import { z } from "zod";
 
-export default function ProfileProductsPage() {
-    const { username } = useParams();
+export const meta: Route.MetaFunction = () => {
+    return [{ title: "Products | wemake" }];
+};
 
+export default function ProfileProductsPage({
+    loaderData,
+}: Route.ComponentProps) {
     return (
-        <div>
-            <h1 className="text-3xl font-bold">{username}'s Products</h1>
-            <p>Profile products page content for {username}</p>
+        <div className="flex flex-col gap-5">
+            {Array.from({ length: 10 }).map((_, index) => (
+                <ProductCard
+                    id={index}
+                    name={`Product ${index}`}
+                    description={`Product ${index} description`}
+                    reviews={`100`}
+                    views={`100`}
+                    upvotes={`100`}
+                />
+            ))}
         </div>
     );
 }

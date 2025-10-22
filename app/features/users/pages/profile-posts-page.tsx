@@ -1,12 +1,26 @@
-import { useParams } from "react-router";
+import { PostCard } from "~/features/community/components/post-card";
+import type { Route } from "./+types/profile-posts-page";
+import { z } from "zod";
+import { data } from "react-router";
+
+export const meta: Route.MetaFunction = () => {
+    return [{ title: "Posts | wemake" }];
+};
 
 export default function ProfilePostsPage() {
-    const { username } = useParams();
-
     return (
-        <div>
-            <h1 className="text-3xl font-bold">{username}'s Posts</h1>
-            <p>Profile posts page content for {username}</p>
+        <div className="flex flex-col gap-5">
+            {Array.from({ length: 10 }).map((_, index) => (
+                <PostCard
+                    id={index}
+                    title={`Post ${index}`}
+                    author={`Author ${index}`}
+                    authorAvatarUrl="https://github.com/shadcn.png"
+                    category="Technology"
+                    postedAt="2025-01-01"
+                    expanded
+                />
+            ))}
         </div>
     );
 }

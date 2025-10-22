@@ -1,11 +1,82 @@
-import { Outlet } from "react-router";
+import { HomeIcon, PackageIcon, RocketIcon, SparklesIcon } from "lucide-react";
+import { Link, Outlet, useLocation } from "react-router";
+import {
+    Sidebar,
+    SidebarContent,
+    SidebarGroup,
+    SidebarGroupLabel,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+    SidebarProvider,
+} from "~/common/components/ui/sidebar";
+import type { Route } from "./+types/dashboard-layout";
 
 export default function DashboardLayout() {
+    const location = useLocation();
     return (
-        <div className="min-h-screen bg-background">
-            <div className="container mx-auto px-4 py-8">
+        <SidebarProvider className="flex min-h-full">
+            <Sidebar className="pt-16" variant="floating">
+                <SidebarContent>
+                    <SidebarGroup>
+                        <SidebarMenu>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton
+                                    asChild
+                                    isActive={
+                                        location.pathname === "/my/dashboard"
+                                    }
+                                >
+                                    <Link to="/my/dashboard">
+                                        <HomeIcon className="size-4" />
+                                        <span>Home</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton
+                                    asChild
+                                    isActive={
+                                        location.pathname ===
+                                        "/my/dashboard/ideas"
+                                    }
+                                >
+                                    <Link to="/my/dashboard/ideas">
+                                        <SparklesIcon className="size-4" />
+                                        <span>Ideas</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        </SidebarMenu>
+                    </SidebarGroup>
+                    <SidebarGroup>
+                        <SidebarGroupLabel>Product Analytics</SidebarGroupLabel>
+                        <SidebarMenu>
+                            {Array.from({ length: 10 }).map((_, index) => (
+                                <SidebarMenuItem key={index}>
+                                    <SidebarMenuButton
+                                        asChild
+                                        isActive={
+                                            location.pathname ===
+                                            `/my/dashboard/products/${index}`
+                                        }
+                                    >
+                                        <Link
+                                            to={`/my/dashboard/products/${index}`}
+                                        >
+                                            <RocketIcon className="size-4" />
+                                            <span>{`Product ${index}`}</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            ))}
+                        </SidebarMenu>
+                    </SidebarGroup>
+                </SidebarContent>
+            </Sidebar>
+            <div className="w-full h-full">
                 <Outlet />
             </div>
-        </div>
+        </SidebarProvider>
     );
 }

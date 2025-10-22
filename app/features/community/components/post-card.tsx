@@ -13,6 +13,7 @@ import {
 import { Button } from "~/common/components/ui/button";
 import { ChevronUpIcon, DotIcon } from "lucide-react";
 import { cn } from "~/lib/utils";
+import { DateTime } from "luxon";
 
 interface PostCardProps {
     id: number;
@@ -45,21 +46,23 @@ export function PostCard({
                     expanded ? "flex flex-row items-center justify-between" : ""
                 )}
             >
-                <CardHeader className="flex flex-row items-center gap-2">
+                <CardHeader className="flex flex-row items-center gap-2 w-full">
                     <Avatar className="size-14">
                         <AvatarFallback>{author[0]}</AvatarFallback>
                         {authorAvatarUrl && (
                             <AvatarImage src={authorAvatarUrl} />
                         )}
                     </Avatar>
-                    <div className="space-y-2">
+                    <div className="space-y-2 w-full">
                         <CardTitle>{title}</CardTitle>
-                        <div className="flex gap-2 text-sm leading-tight text-muted-foreground">
+                        <div className="flex gap-2 text-sm leading-tight text-muted-foreground w-full">
                             <span>
                                 {author} on {category}
                             </span>
                             <DotIcon className="w-4 h-4" />
-                            <span>{postedAt}</span>
+                            <span>
+                                {DateTime.fromISO(postedAt).toRelative()}
+                            </span>
                         </div>
                     </div>
                 </CardHeader>

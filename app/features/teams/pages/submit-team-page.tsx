@@ -1,8 +1,105 @@
-export default function SubmitTeamPage() {
+import { HeroSection } from "~/common/components/hero-section";
+import type { Route } from "./+types/submit-team-page";
+import { Form, redirect } from "react-router";
+import { Button } from "~/common/components/ui/button";
+import InputPair from "~/common/components/input-pair";
+import SelectPair from "~/common/components/select-pair";
+import { z } from "zod";
+import { PRODUCT_STAGES } from "../constants";
+
+export const meta: Route.MetaFunction = () => [
+    { title: "Create Team | wemake" },
+];
+
+export const formSchema = z.object({
+    name: z.string().min(1).max(20),
+    stage: z.enum(
+        PRODUCT_STAGES.map((stage) => stage.value) as [string, ...string[]]
+    ),
+    size: z.coerce.number().min(1).max(100),
+    equity: z.coerce.number().min(1).max(100),
+    roles: z.string().min(1).max(400),
+    description: z.string().min(1).max(200),
+});
+
+export default function SubmitTeamPage({ actionData }: Route.ComponentProps) {
     return (
-        <div className="container mx-auto px-4 py-8">
-            <h1 className="text-3xl font-bold">Create Team</h1>
-            <p>Create team page content</p>
+        <div className="space-y-20">
+            <HeroSection
+                title="Create Team"
+                subtitle="Create a team to find a team mate."
+            />
+            <Form
+                method="post"
+                className="max-w-screen-2xl flex flex-col items-center gap-10 mx-auto"
+            >
+                <div className="grid grid-cols-3 w-full gap-10">
+                    <InputPair
+                        label="What is the name of your product?"
+                        description="(20 characters max)"
+                        placeholder="i.e Doggy Social"
+                        name="name"
+                        maxLength={20}
+                        type="text"
+                        id="name"
+                        required
+                    />
+                    <SelectPair
+                        label="What is the stage of your product?"
+                        description="Select the stage of your product"
+                        name="stage"
+                        required
+                        placeholder="Select the stage of your product"
+                        options={PRODUCT_STAGES.map((stage) => ({
+                            value: stage.value,
+                            label: stage.label,
+                        }))}
+                    />
+                    <InputPair
+                        label="What is the size of your team?"
+                        description="(1-100)"
+                        name="size"
+                        max={100}
+                        min={1}
+                        type="number"
+                        id="size"
+                        required
+                    />
+                    <InputPair
+                        label="How much equity are you willing to give?"
+                        description="(each)"
+                        name="equity"
+                        max={100}
+                        min={1}
+                        type="number"
+                        id="equity"
+                        required
+                    />
+                    <InputPair
+                        label="What roles are you looking for?"
+                        placeholder="React Developer, Backend Developer, Product Manager"
+                        description="(comma separated)"
+                        name="roles"
+                        type="text"
+                        id="roles"
+                        required
+                    />
+                    <InputPair
+                        label="What is the description of your product?"
+                        description="(200 characters max)"
+                        placeholder="i.e We are building a new social media platform for dogs to connect with each other"
+                        name="description"
+                        maxLength={200}
+                        type="text"
+                        id="description"
+                        required
+                        textArea
+                    />
+                </div>
+                <Button type="submit" className="w-full max-w-sm" size="lg">
+                    Create team
+                </Button>
+            </Form>
         </div>
     );
 }

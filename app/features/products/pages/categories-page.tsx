@@ -27,7 +27,7 @@ export default function CategoriesPage({ loaderData }: Route.ComponentProps) {
                 title="Categories"
                 subtitle="Browse products by category"
             />
-            <div className="grid grid-cols-4 gap-10 px-20">
+            <div className="grid grid-cols-4 gap-10 px-10">
                 {Array.from({ length: 10 }).map((_, index) => (
                     <CategoryCard
                         id={index}
