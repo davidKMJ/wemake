@@ -13,6 +13,7 @@ import "./app.css";
 import Navigation from "./common/components/navigation";
 import { Settings } from "luxon";
 import { cn } from "./lib/utils";
+import { PostgrestError } from "@supabase/supabase-js";
 
 export const links: Route.LinksFunction = () => [
     { rel: "preconnect", href: "https://fonts.googleapis.com" },

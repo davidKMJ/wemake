@@ -13,9 +13,16 @@ import { PERIOD_OPTIONS, SORT_OPTIONS } from "../constants";
 import { Input } from "~/common/components/ui/input";
 import { PostCard } from "../components/post-card";
 import { z } from "zod";
+import { getPosts, getTopics } from "../queries";
 
 export const meta: Route.MetaFunction = () => {
     return [{ title: "Community | wemake" }];
+};
+
+export const loader = async () => {
+    const topics = await getTopics();
+    const posts = await getPosts();
+    return { topics, posts };
 };
 
 const searchParamsSchema = z.object({
@@ -123,16 +130,16 @@ export default function CommunityPage({ loaderData }: Route.ComponentProps) {
                         </Button>
                     </div>
                     <div className="space-y-5">
-                        {Array.from({ length: 10 }).map((_, index) => (
+                        {loaderData.posts.map((post) => (
                             <PostCard
-                                key={index}
-                                id={index}
-                                title={`Post ${index}`}
-                                author={`Author ${index}`}
-                                authorAvatarUrl={`https://github.com/shadcn.png`}
-                                category={`Category ${index}`}
-                                postedAt={`2021-01-01`}
-                                votesCount={100}
+                                key={post.post_id}
+                                id={post.post_id}
+                                title={post.title}
+                                author={post.author_name}
+                                authorAvatarUrl={post.author_avatar}
+                                category={post.topic_name}
+                                postedAt={post.created_at}
+                                votesCount={post.upvotes}
                                 expanded
                             />
                         ))}
@@ -143,10 +150,17 @@ export default function CommunityPage({ loaderData }: Route.ComponentProps) {
                         Topics
                     </span>
                     <div className="flex flex-col gap-2 items-start mt-2">
-                        {Array.from({ length: 10 }).map((_, index) => (
-                            <Button key={index} variant={"link"} asChild>
-                                <Link to={`/community?topic=${index}`} preventScrollReset>
-                                    Topic {index}
+                        {loaderData.topics.map((topic) => (
+                            <Button
+                                key={topic.topicId}
+                                variant={"link"}
+                                asChild
+                            >
+                                <Link
+                                    to={`/community?topic=${topic.slug}`}
+                                    preventScrollReset
+                                >
+                                    {topic.name}
                                 </Link>
                             </Button>
                         ))}
