@@ -2,17 +2,16 @@ DROP VIEW IF EXISTS community_post_list_view;
 
 CREATE VIEW community_post_list_view AS
 SELECT
-    posts.post_id as postId,
+    posts.post_id,
     posts.title,
     posts.content,
-    posts.created_at as createdAt,
-    posts.topic_id as topicId,
-    posts.profile_id as profileId,
-    posts.upvotes as upvotes,
-    topics.name as topicName,
-    topics.slug as topicSlug,
-    profiles.name as authorName,
-    profiles.avatar as authorAvatar,
+    posts.created_at,
+    posts.topic_id,
+    posts.profile_id,
+    topics.name as topic_name,
+    topics.slug as topic_slug,
+    profiles.name as author_name,
+    profiles.avatar as author_avatar,
     COUNT(post_upvotes.post_id) as upvotes
 FROM posts
 INNER JOIN topics USING (topic_id)
