@@ -1,129 +1,125 @@
-import type { Route } from "./+types/job-page";
-import { HeroSection } from "~/common/components/hero-section";
-import { Button } from "~/common/components/ui/button";
 import { Badge } from "~/common/components/ui/badge";
+import type { Route } from "./+types/job-page";
 import { DotIcon } from "lucide-react";
-import { z } from "zod";
-import { data } from "react-router";
+import { Button } from "~/common/components/ui/button";
+import { getJobById } from "../queries";
 import { DateTime } from "luxon";
+import { makeSSRClient } from "~/supa-client";
 
-export const meta: Route.MetaFunction = () => {
-    return [
-        { title: "Job Details | wemake" },
-        { name: "description", content: "View job details and information" },
-    ];
+export const meta: Route.MetaFunction = ({ loaderData }) => {
+    return [{ title: `${loaderData.job.position} | wemake` }];
 };
 
-const paramsSchema = z.object({
-    jobId: z.coerce.number(),
-});
-
 export const loader = async ({ params, request }: Route.LoaderArgs) => {
-    
+    const { client, headers } = makeSSRClient(request);
+    const job = await getJobById(client, Number(params.jobId));
+    return { job };
 };
 
 export default function JobPage({ loaderData }: Route.ComponentProps) {
     return (
-        <div className="px-10">
-            <div className="bg-gradient-to-tr from-primary/80 to-preimary/10 h-60 w-full rounded-lg"></div>
-            <div className="grid grid-cols-6 gap-20 -mt-20 items-start">
+        <div>
+            <div className="bg-gradient-to-tr from-primary/80 to-primary/10 h-60 w-full rounded-lg"></div>
+            <div className="grid grid-cols-6 -mt-20 gap-20 items-start">
                 <div className="col-span-4 space-y-10">
                     <div>
-                        <div className="rounded-full overflow-hidden size-40 bg-white ml-5">
+                        <div className="size-40 bg-white rounded-full  overflow-hidden relative left-10">
                             <img
-                                src={"https://github.com/shadcn.png"}
+                                src={loaderData.job.company_logo}
                                 className="object-cover"
                             />
                         </div>
-                        <div>
-                            <h1 className="text-4xl font-bold mt-3">
-                                {`Job 1`}
-                            </h1>
-                            <h4 className="text-lg text-muted-foreground">
-                                {`Company 1`}
-                            </h4>
-                        </div>
+                        <h1 className="text-4xl font-bold mt-5">
+                            {loaderData.job.position}
+                        </h1>
+                        <h4 className="text-lg text-muted-foreground">
+                            {loaderData.job.company_name}
+                        </h4>
                     </div>
-                    <div className="flex gap-2">
-                        <Badge variant="secondary">
-                            {`Job Type 1`}
+                    <div className="flex gap-2 capitalize">
+                        <Badge variant={"secondary"}>
+                            {loaderData.job.job_type}
                         </Badge>
-                        <Badge variant="secondary">
-                            {`Location 1`}
+                        <Badge variant={"secondary"}>
+                            {loaderData.job.location}
                         </Badge>
                     </div>
-                    <div>
+                    <div className="space-y-2.5">
                         <h4 className="text-2xl font-bold">Overview</h4>
-                        <p className="text-lg">{`Overview 1`}</p>
+                        <p className="text-lg">{loaderData.job.overview}</p>
                     </div>
-                    <div>
+                    <div className="space-y-2.5">
                         <h4 className="text-2xl font-bold">Responsibilities</h4>
                         <ul className="text-lg list-disc list-inside">
-                            {Array.from({ length: 10 }).map((_, index) => (
-                                <li className="text-lg">{`Responsibility ${index}`}</li>
-                            ))}
+                            {loaderData.job.responsibilities
+                                .split(",")
+                                .map((item) => (
+                                    <li key={item}>{item}</li>
+                                ))}
                         </ul>
                     </div>
-                    <div>
+                    <div className="space-y-2.5">
                         <h4 className="text-2xl font-bold">Qualifications</h4>
                         <ul className="text-lg list-disc list-inside">
-                            {Array.from({ length: 10 }).map((_, index) => (
-                                <li className="text-lg">{`Qualification ${index}`}</li>
-                            ))}
+                            {loaderData.job.qualifications
+                                .split(",")
+                                .map((item) => (
+                                    <li key={item}>{item}</li>
+                                ))}
                         </ul>
                     </div>
-                    <div>
+                    <div className="space-y-2.5">
                         <h4 className="text-2xl font-bold">Benefits</h4>
                         <ul className="text-lg list-disc list-inside">
-                            {Array.from({ length: 10 }).map((_, index) => (
-                                <li className="text-lg">{`Benefit ${index}`}</li>
+                            {loaderData.job.benefits.split(",").map((item) => (
+                                <li key={item}>{item}</li>
                             ))}
                         </ul>
                     </div>
-                    <div>
+                    <div className="space-y-2.5">
                         <h4 className="text-2xl font-bold">Skills</h4>
                         <ul className="text-lg list-disc list-inside">
-                            {Array.from({ length: 10 }).map((_, index) => (
-                                <li className="text-lg">{`Skill ${index}`}</li>
+                            {loaderData.job.skills.split(",").map((item) => (
+                                <li key={item}>{item}</li>
                             ))}
                         </ul>
                     </div>
                 </div>
-                <div className="col-span-2 sticky top-20 mt-32 p-6 border rounded-lg space-y-4">
+                <div className="col-span-2 space-y-5 mt-32 sticky top-20 p-6 border rounded-lg">
                     <div className="flex flex-col">
-                        <span className="text-sm text-muted-foreground">
+                        <span className=" text-sm text-muted-foreground">
                             Avg. Salary
                         </span>
                         <span className="text-2xl font-medium">
-                            {`Salary Range 1`}
+                            {loaderData.job.salary_range}
                         </span>
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-sm text-muted-foreground">
+                        <span className=" text-sm text-muted-foreground">
                             Location
                         </span>
-                        <span className="text-2xl font-medium">
-                            {`Location 1`}
+                        <span className="text-2xl font-medium capitalize">
+                            {loaderData.job.location}
                         </span>
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-sm text-muted-foreground">
+                        <span className=" text-sm text-muted-foreground">
                             Type
                         </span>
-                        <span className="text-2xl font-medium">
-                            {`Job Type 1`}
+                        <span className="text-2xl font-medium capitalize">
+                            {loaderData.job.job_type}
                         </span>
                     </div>
-                    <div className="flex items-center gap-1">
-                        <span className="text-sm text-muted-foreground">
+                    <div className="flex">
+                        <span className=" text-sm text-muted-foreground">
                             Posted{" "}
                             {DateTime.fromISO(
-                                "2025-01-01"
+                                loaderData.job.created_at
                             ).toRelative()}
                         </span>
                         <DotIcon className="size-4" />
-                        <span className="text-sm text-muted-foreground">
-                            100 views
+                        <span className=" text-sm text-muted-foreground">
+                            395 views
                         </span>
                     </div>
                     <Button className="w-full">Apply Now</Button>

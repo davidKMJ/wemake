@@ -12,11 +12,37 @@ import {
     ChartTooltipContent,
 } from "~/common/components/ui/chart";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
+import { makeSSRClient } from "~/supa-client";
+import { getLoggedInUserId } from "~/features/auth/queries";
+import { redirect } from "react-router";
 
 export const meta: Route.MetaFunction = () => {
     return [{ title: "Product Dashboard | wemake" }];
 };
-    
+
+export const loader = async ({ request, params }: Route.LoaderArgs) => {
+    const { client } = makeSSRClient(request);
+    const userId = await getLoggedInUserId(client);
+    const { error } = await client
+        .from("products")
+        .select("product_id")
+        .eq("profile_id", userId)
+        .eq("product_id", Number(params.productId))
+        .single();
+    if (error) {
+        throw redirect("/my/dashboard/products");
+    }
+    const { data, error: rcpError } = await client.rpc("get_product_stats", {
+        product_id: params.productId,
+    });
+    if (rcpError) {
+        throw error;
+    }
+    return {
+        chartData: data,
+    };
+};
+
 const chartConfig = {
     views: {
         label: "Page Views",
@@ -42,11 +68,7 @@ export default function DashboardProductPage({
                     <ChartContainer config={chartConfig}>
                         <AreaChart
                             accessibilityLayer
-                            data={Array.from({ length: 10 }).map((_, index) => ({
-                                month: `Month ${index}`,
-                                product_views: index * 100,
-                                product_visits: index * 100,
-                            }))}
+                            data={loaderData.chartData}
                             margin={{
                                 left: 12,
                                 right: 12,

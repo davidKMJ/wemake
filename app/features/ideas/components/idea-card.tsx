@@ -9,14 +9,15 @@ import {
 } from "~/common/components/ui/card";
 import { DotIcon, EyeIcon, HeartIcon, LockIcon } from "lucide-react";
 import { cn } from "~/lib/utils";
+import { DateTime } from "luxon";
 
 interface IdeaCardProps {
     id: number;
     title: string;
+    owner?: boolean;
     views?: number;
-    likes?: number;
     postedAt?: string;
-    owner: boolean;
+    likes?: number;
     claimed?: boolean;
 }
 
@@ -31,7 +32,7 @@ export function IdeaCard({
 }: IdeaCardProps) {
     return (
         <Card className="bg-transparent hover:bg-card/50 transition-colors">
-            <Link to={claimed ? `/ideas` : `/ideas/${id}`}>
+            <Link to={claimed || owner ? `/ideas` : `/ideas/${id}`}>
                 <CardHeader>
                     <CardTitle className="text-xl">
                         <span
@@ -53,7 +54,9 @@ export function IdeaCard({
                         <span>{views}</span>
                     </div>
                     <DotIcon className="w-4 h-4" />
-                    {postedAt ? <span>{postedAt}</span> : null}
+                    {postedAt ? (
+                        <span>{DateTime.fromISO(postedAt).toRelative()}</span>
+                    ) : null}
                 </CardContent>
             ) : null}
             <CardFooter className="flex justify-end gap-2">
@@ -66,11 +69,17 @@ export function IdeaCard({
                     </Button>
                 ) : null}
                 {!claimed && !owner ? (
-                    <Button className="text-primary-foreground" asChild>
-                        <Link to={`/ideas/${id}/claim`}>
-                            Claim idea now &rarr;
-                        </Link>
-                    </Button>
+                    <>
+                        <Button variant="outline">
+                            <HeartIcon className="w-4 h-4" />
+                            <span>{likes}</span>
+                        </Button>
+                        <Button asChild>
+                            <Link to={`/ideas/${id}`}>
+                                Claim idea now &rarr;
+                            </Link>
+                        </Button>
+                    </>
                 ) : (
                     <div className="cursor-not-allowed">
                         <Button

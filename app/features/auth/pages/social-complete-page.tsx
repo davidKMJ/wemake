@@ -1,14 +1,26 @@
-import { useParams } from "react-router";
+import { z } from "zod";
+import type { Route } from "./+types/social-start-page";
+import { redirect } from "react-router";
+import { makeSSRClient } from "~/supa-client";
 
-export default function SocialCompletePage() {
-    const { provider } = useParams();
+const paramsSchema = z.object({
+    provider: z.enum(["github", "kakao"]),
+});
 
-    return (
-        <div>
-            <h1 className="text-3xl font-bold text-center mb-8">
-                Social Complete - {provider}
-            </h1>
-            <p>Social complete page content for {provider}</p>
-        </div>
-    );
-}
+export const loader = async ({ params, request }: Route.LoaderArgs) => {
+    const { success, data } = paramsSchema.safeParse(params);
+    if (!success) {
+        return redirect("/auth/login");
+    }
+    const url = new URL(request.url);
+    const code = url.searchParams.get("code");
+    if (!code) {
+        return redirect("/auth/login");
+    }
+    const { client, headers } = makeSSRClient(request);
+    const { error } = await client.auth.exchangeCodeForSession(code);
+    if (error) {
+        throw error;
+    }
+    return redirect("/", { headers });
+};

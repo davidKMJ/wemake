@@ -1,9 +1,17 @@
 import { ProductCard } from "~/features/products/components/product-card";
 import type { Route } from "./+types/profile-products-page";
 import { z } from "zod";
+import { getUserProducts } from "../queries";
+import { makeSSRClient } from "~/supa-client";
 
 export const meta: Route.MetaFunction = () => {
     return [{ title: "Products | wemake" }];
+};
+
+export const loader = async ({ params, request }: Route.LoaderArgs) => {
+    const { client } = makeSSRClient(request);
+    const products = await getUserProducts(client, params.username);
+    return { products };
 };
 
 export default function ProfileProductsPage({
@@ -11,14 +19,14 @@ export default function ProfileProductsPage({
 }: Route.ComponentProps) {
     return (
         <div className="flex flex-col gap-5">
-            {Array.from({ length: 10 }).map((_, index) => (
+            {loaderData.products.map((product) => (
                 <ProductCard
-                    id={index}
-                    name={`Product ${index}`}
-                    description={`Product ${index} description`}
-                    reviews={`100`}
-                    views={`100`}
-                    upvotes={`100`}
+                    id={product.product_id}
+                    name={product.name}
+                    description={product.tagline}
+                    reviews={product.reviews}
+                    views={product.views}
+                    upvotes={product.upvotes}
                 />
             ))}
         </div>

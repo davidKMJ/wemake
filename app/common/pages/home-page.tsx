@@ -6,12 +6,36 @@ import { Button } from "../components/ui/button";
 import { IdeaCard } from "~/features/ideas/components/idea-card";
 import { JobCard } from "~/features/jobs/components/job-card";
 import { TeamCard } from "~/features/teams/components/team-card";
+import { getProductsByDateRange } from "~/features/products/queries";
+import { DateTime } from "luxon";
+import { getPosts } from "~/features/community/queries";
+import { getGptIdeas } from "~/features/ideas/queries";
+import { getJobs } from "~/features/jobs/queries";
+import { getTeams } from "~/features/teams/queries";
+import { makeSSRClient } from "~/supa-client";
 
 export const meta: MetaFunction = () => {
     return [
         { title: "Home | wemake" },
         { name: "description", content: "Welcome to wemake" },
     ];
+};
+
+export const loader = async ({ request }: Route.LoaderArgs) => {
+    const { client, headers } = makeSSRClient(request);
+    const products = await getProductsByDateRange(client, {
+        startDate: DateTime.now().startOf("day"),
+        endDate: DateTime.now().endOf("day"),
+        limit: 7,
+    });
+    const posts = await getPosts(client, {
+        limit: 7,
+        sorting: "newest",
+    });
+    const ideas = await getGptIdeas(client, { limit: 7 });
+    const jobs = await getJobs(client, { limit: 11 });
+    const teams = await getTeams(client, { limit: 7 });
+    return { products, posts, ideas, jobs, teams };
 };
 
 export default function HomePage({ loaderData }: Route.ComponentProps) {
@@ -26,19 +50,20 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
                         The best products made by our community today.
                     </p>
                     <Button variant="link" asChild className="text-lg p-0">
-                        <Link to="/products/leaderboards">
+                        <Link to="/products/leaderboards" prefetch="intent">
                             Explore all products &rarr;
                         </Link>
                     </Button>
                 </div>
-                {Array.from({ length: 10 }).map(() => (
+                {loaderData.products.map((product) => (
                     <ProductCard
-                        id={1}
-                        name={"Product 1"}
-                        description={"Product 1 description"}
-                        reviews={"100"}
-                        views={"100"}
-                        upvotes={"100"}
+                        key={product.product_id}
+                        id={product.product_id}
+                        name={product.name}
+                        description={product.tagline}
+                        reviews={product.reviews}
+                        views={product.views}
+                        upvotes={product.upvotes}
                     />
                 ))}
             </div>
@@ -56,15 +81,16 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
                         </Link>
                     </Button>
                 </div>
-                {Array.from({ length: 10 }).map(() => (
+                {loaderData.posts.map((post) => (
                     <PostCard
-                        id={1}
-                        title={"Post 1"}
-                        author={"Author 1"}
-                        authorAvatarUrl={"https://github.com/shadcn.png"}
-                        category={"Category 1"}
-                        postedAt={"2021-01-01"}
-                        votesCount={100}
+                        key={post.post_id}
+                        id={post.post_id}
+                        title={post.title}
+                        author={post.author_name}
+                        authorAvatarUrl={post.author_avatar}
+                        category={post.topic_name}
+                        postedAt={post.created_at}
+                        votesCount={post.upvotes}
                     />
                 ))}
             </div>
@@ -80,14 +106,15 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
                         <Link to="/ideas">Explore all ideas &rarr;</Link>
                     </Button>
                 </div>
-                {Array.from({ length: 10 }).map((_, index) => (
+                {loaderData.ideas.map((idea) => (
                     <IdeaCard
-                        id={1}
-                        title={"Idea 1"}
-                        views={100}
-                        likes={100}
-                        postedAt={"2021-01-01"}
-                        claimed={index % 2 === 0}
+                        key={idea.gpt_idea_id}
+                        id={idea.gpt_idea_id}
+                        title={idea.idea}
+                        views={idea.views}
+                        likes={idea.likes}
+                        postedAt={idea.created_at}
+                        claimed={!!idea.claimed_at}
                         owner={false}
                     />
                 ))}
@@ -104,17 +131,18 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
                         <Link to="/jobs">Explore all jobs &rarr;</Link>
                     </Button>
                 </div>
-                {Array.from({ length: 10 }).map(() => (
+                {loaderData.jobs.map((job) => (
                     <JobCard
-                        id={1}
-                        title={"Job 1"}
-                        company={"Company 1"}
-                        companyLogoUrl={"https://github.com/shadcn.png"}
-                        companyHq={"Company 1"}
-                        postedAt={"2021-01-01"}
-                        type={"Job 1"}
-                        positionLocation={"Location 1"}
-                        salary={"$100,000 - $120,000"}
+                        key={job.job_id}
+                        id={job.job_id}
+                        title={job.position}
+                        company={job.company_name}
+                        companyLogoUrl={job.company_logo}
+                        companyHq={job.company_location}
+                        postedAt={job.created_at}
+                        type={job.job_type}
+                        positionLocation={job.location}
+                        salary={job.salary_range}
                     />
                 ))}
             </div>
@@ -130,13 +158,14 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
                         <Link to="/teams">Explore all teams &rarr;</Link>
                     </Button>
                 </div>
-                {Array.from({ length: 10 }).map(() => (
+                {loaderData.teams.map((team) => (
                     <TeamCard
-                        id={1}
-                        leaderUsername={"Leader 1"}
-                        leaderAvatarUrl={"https://github.com/shadcn.png"}
-                        positions={["Position 1", "Position 2"]}
-                        description={"Description 1"}
+                        key={team.team_id}
+                        id={team.team_id}
+                        leaderUsername={team.team_leader.username}
+                        leaderAvatarUrl={team.team_leader.avatar}
+                        positions={team.roles.split(",")}
+                        description={team.product_description}
                     />
                 ))}
             </div>

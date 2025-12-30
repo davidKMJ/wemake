@@ -7,6 +7,8 @@ import { Button } from "~/common/components/ui/button";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import type { Route } from "./+types/weekly-leaderboard-page";
 import ProductPagination from "~/common/components/product-pagination";
+import { getProductPagesByDateRange, getProductsByDateRange } from "../queries";
+import { makeSSRClient } from "~/supa-client";
 
 const paramsSchema = z.object({
     year: z.coerce.number(),
@@ -21,15 +23,16 @@ export const meta: Route.MetaFunction = ({ params }) => {
     return [
         {
             title: `Best products of ${date
-                    .startOf("week")
-                    .toLocaleString(DateTime.DATE_SHORT)} - ${date
-                    .endOf("week")
-                    .toLocaleString(DateTime.DATE_SHORT)} | wemake`,
+                .startOf("week")
+                .toLocaleString(DateTime.DATE_SHORT)} - ${date
+                .endOf("week")
+                .toLocaleString(DateTime.DATE_SHORT)} | wemake`,
         },
     ];
 };
 
 export const loader = async ({ params, request }: Route.LoaderArgs) => {
+    const { client, headers } = makeSSRClient(request);
     const { success, data: parsedData } = paramsSchema.safeParse(params);
     if (!success) {
         throw data(
@@ -72,7 +75,22 @@ export const loader = async ({ params, request }: Route.LoaderArgs) => {
         );
     }
 
-    return { ...parsedData };
+    const url = new URL(request.url);
+    const products = await getProductsByDateRange(client, {
+        startDate: date.startOf("week"),
+        endDate: date.endOf("week"),
+        limit: 15,
+        page: Number(url.searchParams.get("page") || 1),
+    });
+    const totalPages = await getProductPagesByDateRange(client, {
+        startDate: date.startOf("week"),
+        endDate: date.endOf("week"),
+    });
+    return {
+        products,
+        totalPages,
+        ...parsedData,
+    };
 };
 
 export default function WeeklyLeaderboardPage({
@@ -117,18 +135,19 @@ export default function WeeklyLeaderboardPage({
                 )}
             </div>
             <div className="space-y-5 w-full max-w-screen-md mx-auto">
-                {Array.from({ length: 10 }).map((_, index) => (
+                {loaderData.products.map((product) => (
                     <ProductCard
-                        id={index}
-                        name={`Product ${index}`}
-                        description={`Product ${index} description`}
-                        reviews={`100`}
-                        views={`100`}
-                        upvotes={`100`}
+                        key={product.product_id}
+                        id={product.product_id}
+                        name={product.name}
+                        description={product.tagline}
+                        reviews={product.reviews}
+                        views={product.views}
+                        upvotes={product.upvotes}
                     />
                 ))}
             </div>
-            <ProductPagination totalPages={10} />
+            <ProductPagination totalPages={loaderData.totalPages} />
         </div>
     );
 }

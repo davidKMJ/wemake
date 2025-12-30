@@ -1,4 +1,5 @@
 import { HeroSection } from "~/common/components/hero-section";
+import type { Route } from "./+types/team-page";
 import { Button } from "~/common/components/ui/button";
 import {
     Avatar,
@@ -14,36 +15,41 @@ import {
     CardHeader,
     CardTitle,
 } from "~/common/components/ui/card";
-import type { Route } from "./+types/team-page";
+import { getTeamById } from "../queries";
+import { makeSSRClient } from "~/supa-client";
 
 export const meta: Route.MetaFunction = () => [
     { title: "Team Details | wemake" },
 ];
 
-export default function TeamPage() {
+export const loader = async ({ params, request }: Route.LoaderArgs) => {
+    const { client } = makeSSRClient(request);
+    const team = await getTeamById(client, Number(params.teamId));
+    return { team };
+};
+
+export default function TeamPage({ loaderData }: Route.ComponentProps) {
     return (
         <div className="space-y-20">
-            <HeroSection
-                title="Join Leader's team"
-            />
-            <div className="grid grid-cols-6 gap-40 items-start px-10">
+            <HeroSection title={`Join ${loaderData.team.team_leader.name}'s team`} />
+            <div className="grid grid-cols-6 gap-40 items-start">
                 <div className="col-span-4 grid grid-cols-4 gap-5">
                     {[
                         {
                             title: "Product name",
-                            value: "Product Name",
+                            value: loaderData.team.product_name,
                         },
                         {
                             title: "Stage",
-                            value: "Stage",
+                            value: loaderData.team.product_stage,
                         },
                         {
                             title: "Team size",
-                            value: "10",
+                            value: loaderData.team.team_size,
                         },
                         {
                             title: "Available equity",
-                            value: "10%",
+                            value: loaderData.team.equity_split,
                         },
                     ].map((item) => (
                         <Card>
@@ -51,7 +57,7 @@ export default function TeamPage() {
                                 <CardTitle className="text-sm font-medium text-muted-foreground">
                                     {item.title}
                                 </CardTitle>
-                                <CardContent className="p-0 font-bold text-2xl">
+                                <CardContent className="p-0 capitalize font-bold text-2xl">
                                     <p>{item.value}</p>
                                 </CardContent>
                             </CardHeader>
@@ -64,7 +70,8 @@ export default function TeamPage() {
                             </CardTitle>
                             <CardContent className="p-0 font-bold text-2xl">
                                 <ul className="text-lg list-disc list-inside">
-                                    {["Role 1", "Role 2"]
+                                    {loaderData.team.roles
+                                        .split(",")
                                         .map((item) => (
                                             <li key={item}>{item}</li>
                                         ))}
@@ -78,7 +85,7 @@ export default function TeamPage() {
                                 Idea description
                             </CardTitle>
                             <CardContent className="p-0 font-medium text-xl">
-                                <p>Product Description</p>
+                                <p>{loaderData.team.product_description}</p>
                             </CardContent>
                         </CardHeader>
                     </Card>
@@ -87,16 +94,20 @@ export default function TeamPage() {
                     <div className="flex gap-5">
                         <Avatar className="size-14">
                             <AvatarFallback>
-                                L
+                                {loaderData.team.team_leader.name[0]}
                             </AvatarFallback>
-                            <AvatarImage src="https://github.com/shadcn.png" />
+                            {loaderData.team.team_leader.avatar ? (
+                                <AvatarImage
+                                    src={loaderData.team.team_leader.avatar}
+                                />
+                            ) : null}
                         </Avatar>
                         <div className="flex flex-col">
                             <h4 className="text-lg font-medium">
-                                Leader
+                                {loaderData.team.team_leader.name}
                             </h4>
-                            <Badge variant="secondary">
-                                Role
+                            <Badge variant="secondary" className="capitalize">
+                                {loaderData.team.team_leader.role}
                             </Badge>
                         </div>
                     </div>

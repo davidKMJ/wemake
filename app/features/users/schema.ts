@@ -46,10 +46,10 @@ export const profiles = pgTable("profiles", {
 export const follows = pgTable("follows", {
     follower_id: uuid().references(() => profiles.profile_id, {
         onDelete: "cascade",
-    }),
+    }).notNull(),
     following_id: uuid().references(() => profiles.profile_id, {
         onDelete: "cascade",
-    }),
+    }).notNull(),
     created_at: timestamp().notNull().defaultNow(),
 });
 
@@ -57,7 +57,6 @@ export const notificationsTypes = pgEnum("notifications_types", [
     "follow",
     "review",
     "reply",
-    "mention",
 ]);
 
 export const notifications = pgTable("notifications", {
@@ -71,7 +70,7 @@ export const notifications = pgTable("notifications", {
         () => products.product_id,
         {
             onDelete: "cascade",
-        }
+        },
     ),
     post_id: bigint({ mode: "number" }).references(() => posts.post_id, {
         onDelete: "cascade",
@@ -83,6 +82,7 @@ export const notifications = pgTable("notifications", {
         .notNull(),
     type: notificationsTypes().notNull(),
     created_at: timestamp().notNull().defaultNow(),
+    seen: boolean().notNull().default(false),
 });
 
 export const messageRooms = pgTable("message_rooms", {
@@ -99,7 +99,7 @@ export const messageRoomMembers = pgTable(
             () => messageRooms.message_room_id,
             {
                 onDelete: "cascade",
-            }
+            },
         ),
         profile_id: uuid().references(() => profiles.profile_id, {
             onDelete: "cascade",
@@ -108,7 +108,7 @@ export const messageRoomMembers = pgTable(
     },
     (table) => [
         primaryKey({ columns: [table.message_room_id, table.profile_id] }),
-    ]
+    ],
 );
 
 export const messages = pgTable("messages", {

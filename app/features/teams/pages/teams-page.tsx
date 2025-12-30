@@ -1,14 +1,18 @@
 import { HeroSection } from "~/common/components/hero-section";
 import { TeamCard } from "../components/team-card";
 import type { Route } from "./+types/teams-page";
+import { getTeams } from "../queries";
+import { makeSSRClient } from "~/supa-client";
 
 export const meta: Route.MetaFunction = () => [{ title: "Teams | wemake" }];
 
 export const loader = async ({ request }: Route.LoaderArgs) => {
-    return { teams: [] };
+    const { client } = makeSSRClient(request);
+    const teams = await getTeams(client, { limit: 8 });
+    return { teams };
 };
 
-export default function TeamsPage() {
+export default function TeamsPage({ loaderData }: Route.ComponentProps) {
     return (
         <div className="space-y-20">
             <HeroSection
@@ -16,14 +20,14 @@ export default function TeamsPage() {
                 subtitle="Find a team looking for a new member."
             />
             <div className="grid grid-cols-4 gap-4 px-10">
-                {Array.from({ length: 10 }).map((_, index) => (
+                {loaderData.teams.map((team) => (
                     <TeamCard
-                        key={index}
-                        id={index}
-                        leaderUsername={`Leader ${index}`}
-                        leaderAvatarUrl={`https://github.com/shadcn.png`}
-                        positions={["Position 1", "Position 2"]}
-                        description={`Description ${index}`}
+                        key={team.team_id}
+                        id={team.team_id}
+                        leaderUsername={team.team_leader.username}
+                        leaderAvatarUrl={team.team_leader.avatar}
+                        positions={team.roles.split(",")}
+                        description={team.product_description}
                     />
                 ))}
             </div>

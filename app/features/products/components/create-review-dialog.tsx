@@ -11,10 +11,12 @@ import {
     DialogFooter,
 } from "~/common/components/ui/dialog";
 import { Label } from "~/common/components/ui/label";
+import type { action } from "../pages/product-reviews-page";
 
 export default function CreateReviewDialog() {
     const [rating, setRating] = useState<number>(0);
     const [hoveredStar, setHoveredStar] = useState<number>(0);
+    const actionData = useActionData<typeof action>();
     return (
         <DialogContent>
             <DialogHeader>
@@ -60,6 +62,11 @@ export default function CreateReviewDialog() {
                             </label>
                         ))}
                     </div>
+                    {actionData?.formErrors?.rating ? (
+                        <p className="text-red-500">
+                            {actionData?.formErrors?.rating}
+                        </p>
+                    ) : null}
                 </div>
                 <InputPair
                     textArea

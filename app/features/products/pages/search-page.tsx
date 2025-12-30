@@ -6,6 +6,8 @@ import { Button } from "~/common/components/ui/button";
 import { HeroSection } from "~/common/components/hero-section";
 import ProductPagination from "~/common/components/product-pagination";
 import { Input } from "~/common/components/ui/input";
+import { getProductsBySearch, getPagesBySearch } from "../queries";
+import { makeSSRClient } from "~/supa-client";
 
 export const meta: Route.MetaFunction = () => {
     return [
@@ -19,13 +21,14 @@ export const meta: Route.MetaFunction = () => {
     ];
 };
 
-const paramsSchema = z.object({
+const searchParamsSchema = z.object({
     query: z.string().optional().default(""),
     page: z.coerce.number().optional().default(1),
 });
 
 export const loader = async ({ request }: Route.LoaderArgs) => {
-    const { success, data: parsedData } = paramsSchema.safeParse(
+    const { client, headers } = makeSSRClient(request);
+    const { success, data: parsedData } = searchParamsSchema.safeParse(
         Object.fromEntries(new URL(request.url).searchParams)
     );
     if (!success) {
@@ -39,6 +42,15 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
             }
         );
     }
+    if (parsedData.query === "") {
+        return { products: [], totalPages: 1 };
+    }
+    const products = await getProductsBySearch(client, {
+        query: parsedData.query,
+        page: parsedData.page,
+    });
+    const totalPages = await getPagesBySearch(client, { query: parsedData.query });
+    return { products, totalPages };
 };
 
 export default function SearchPage({ loaderData }: Route.ComponentProps) {
@@ -57,18 +69,19 @@ export default function SearchPage({ loaderData }: Route.ComponentProps) {
                 <Button type="submit">Search</Button>
             </Form>
             <div className="space-y-5 w-full max-w-screen-md mx-auto">
-                {Array.from({ length: 10 }).map((_, index) => (
+                {loaderData.products.map((product) => (
                     <ProductCard
-                        id={index}
-                        name={`Product ${index}`}
-                        description={`Product ${index} description`}
-                        reviews={`100`}
-                        views={`100`}
-                        upvotes={`100`}
+                        key={product.product_id}
+                        id={product.product_id}
+                        name={product.name}
+                        description={product.tagline}
+                        reviews={product.reviews}
+                        views={product.views}
+                        upvotes={product.upvotes}
                     />
                 ))}
             </div>
-            <ProductPagination totalPages={10} />
+            <ProductPagination totalPages={loaderData.totalPages} />
         </div>
     );
 }

@@ -38,21 +38,42 @@ export type Database = {
         }
         Relationships: []
       }
+      events: {
+        Row: {
+          created_at: string | null
+          event_data: Json | null
+          event_id: string
+          event_type: Database["public"]["Enums"]["event_type"] | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_data?: Json | null
+          event_id?: string
+          event_type?: Database["public"]["Enums"]["event_type"] | null
+        }
+        Update: {
+          created_at?: string | null
+          event_data?: Json | null
+          event_id?: string
+          event_type?: Database["public"]["Enums"]["event_type"] | null
+        }
+        Relationships: []
+      }
       follows: {
         Row: {
           created_at: string
-          follower_id: string | null
-          following_id: string | null
+          follower_id: string
+          following_id: string
         }
         Insert: {
           created_at?: string
-          follower_id?: string | null
-          following_id?: string | null
+          follower_id: string
+          following_id: string
         }
         Update: {
           created_at?: string
-          follower_id?: string | null
-          following_id?: string | null
+          follower_id?: string
+          following_id?: string
         }
         Relationships: [
           {
@@ -125,6 +146,13 @@ export type Database = {
             columns: ["gpt_idea_id"]
             isOneToOne: false
             referencedRelation: "gpt_ideas"
+            referencedColumns: ["gpt_idea_id"]
+          },
+          {
+            foreignKeyName: "gpt_ideas_likes_gpt_idea_id_gpt_ideas_gpt_idea_id_fk"
+            columns: ["gpt_idea_id"]
+            isOneToOne: false
+            referencedRelation: "gpt_ideas_view"
             referencedColumns: ["gpt_idea_id"]
           },
           {
@@ -289,6 +317,7 @@ export type Database = {
           notification_id: number
           post_id: number | null
           product_id: number | null
+          seen: boolean
           source_id: string | null
           target_id: string
           type: Database["public"]["Enums"]["notifications_types"]
@@ -298,6 +327,7 @@ export type Database = {
           notification_id?: never
           post_id?: number | null
           product_id?: number | null
+          seen?: boolean
           source_id?: string | null
           target_id: string
           type: Database["public"]["Enums"]["notifications_types"]
@@ -307,11 +337,19 @@ export type Database = {
           notification_id?: never
           post_id?: number | null
           product_id?: number | null
+          seen?: boolean
           source_id?: string | null
           target_id?: string
           type?: Database["public"]["Enums"]["notifications_types"]
         }
         Relationships: [
+          {
+            foreignKeyName: "notifications_post_id_posts_post_id_fk"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_post_detail"
+            referencedColumns: ["post_id"]
+          },
           {
             foreignKeyName: "notifications_post_id_posts_post_id_fk"
             columns: ["post_id"]
@@ -325,6 +363,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "posts"
             referencedColumns: ["post_id"]
+          },
+          {
+            foreignKeyName: "notifications_product_id_products_product_id_fk"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "product_overview_view"
+            referencedColumns: ["product_id"]
           },
           {
             foreignKeyName: "notifications_product_id_products_product_id_fk"
@@ -389,6 +434,13 @@ export type Database = {
             foreignKeyName: "post_replies_post_id_posts_post_id_fk"
             columns: ["post_id"]
             isOneToOne: false
+            referencedRelation: "community_post_detail"
+            referencedColumns: ["post_id"]
+          },
+          {
+            foreignKeyName: "post_replies_post_id_posts_post_id_fk"
+            columns: ["post_id"]
+            isOneToOne: false
             referencedRelation: "community_post_list_view"
             referencedColumns: ["post_id"]
           },
@@ -422,6 +474,13 @@ export type Database = {
           profile_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "post_upvotes_post_id_posts_post_id_fk"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_post_detail"
+            referencedColumns: ["post_id"]
+          },
           {
             foreignKeyName: "post_upvotes_post_id_posts_post_id_fk"
             columns: ["post_id"]
@@ -488,6 +547,13 @@ export type Database = {
             foreignKeyName: "posts_topic_id_topics_topic_id_fk"
             columns: ["topic_id"]
             isOneToOne: false
+            referencedRelation: "community_post_detail"
+            referencedColumns: ["topic_id"]
+          },
+          {
+            foreignKeyName: "posts_topic_id_topics_topic_id_fk"
+            columns: ["topic_id"]
+            isOneToOne: false
             referencedRelation: "topics"
             referencedColumns: ["topic_id"]
           },
@@ -507,6 +573,13 @@ export type Database = {
           profile_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "product_upvotes_product_id_products_product_id_fk"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "product_overview_view"
+            referencedColumns: ["product_id"]
+          },
           {
             foreignKeyName: "product_upvotes_product_id_products_product_id_fk"
             columns: ["product_id"]
@@ -665,6 +738,13 @@ export type Database = {
             foreignKeyName: "reviews_product_id_products_product_id_fk"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "product_overview_view"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "reviews_product_id_products_product_id_fk"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["product_id"]
           },
@@ -747,12 +827,34 @@ export type Database = {
       }
     }
     Views: {
+      community_post_detail: {
+        Row: {
+          author_avatar: string | null
+          author_created_at: string | null
+          author_name: string | null
+          author_role: Database["public"]["Enums"]["roles"] | null
+          author_username: string | null
+          content: string | null
+          created_at: string | null
+          is_upvoted: boolean | null
+          post_id: number | null
+          products: number | null
+          replies: number | null
+          title: string | null
+          topic_id: number | null
+          topic_name: string | null
+          topic_slug: string | null
+          upvotes: number | null
+        }
+        Relationships: []
+      }
       community_post_list_view: {
         Row: {
           author_avatar: string | null
           author_name: string | null
           content: string | null
           created_at: string | null
+          is_upvoted: boolean | null
           post_id: number | null
           profile_id: string | null
           title: string | null
@@ -773,19 +875,77 @@ export type Database = {
             foreignKeyName: "posts_topic_id_topics_topic_id_fk"
             columns: ["topic_id"]
             isOneToOne: false
+            referencedRelation: "community_post_detail"
+            referencedColumns: ["topic_id"]
+          },
+          {
+            foreignKeyName: "posts_topic_id_topics_topic_id_fk"
+            columns: ["topic_id"]
+            isOneToOne: false
             referencedRelation: "topics"
             referencedColumns: ["topic_id"]
           },
         ]
       }
+      gpt_ideas_view: {
+        Row: {
+          claimed_at: string | null
+          created_at: string | null
+          gpt_idea_id: number | null
+          idea: string | null
+          likes: number | null
+          views: number | null
+        }
+        Relationships: []
+      }
+      product_overview_view: {
+        Row: {
+          average_rating: number | null
+          description: string | null
+          how_it_works: string | null
+          icon: string | null
+          name: string | null
+          product_id: number | null
+          reviews: string | null
+          tagline: string | null
+          upvotes: string | null
+          url: string | null
+          views: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      get_dashboard_stats: {
+        Args: { user_id: string }
+        Returns: {
+          month: string
+          views: number
+        }[]
+      }
+      get_product_stats: {
+        Args: { product_id: string }
+        Returns: {
+          month: string
+          product_views: number
+          product_visits: number
+        }[]
+      }
+      track_event:
+        | {
+            Args: {
+              event_data: Json
+              event_type: Database["public"]["Enums"]["event_type"]
+            }
+            Returns: undefined
+          }
+        | { Args: { event_data: Json; event_type: string }; Returns: undefined }
     }
     Enums: {
+      event_type: "product_view" | "product_visit" | "profile_view"
       job_type: "full-time" | "part-time" | "remote"
       location: "remote" | "in-person" | "hybrid"
-      notifications_types: "follow" | "review" | "reply" | "mention"
+      notifications_types: "follow" | "review" | "reply"
       product_stages: "idea" | "prototype" | "mvp" | "product"
       roles: "developer" | "marketer" | "founder" | "product-manager"
       salary_range:
@@ -922,9 +1082,10 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      event_type: ["product_view", "product_visit", "profile_view"],
       job_type: ["full-time", "part-time", "remote"],
       location: ["remote", "in-person", "hybrid"],
-      notifications_types: ["follow", "review", "reply", "mention"],
+      notifications_types: ["follow", "review", "reply"],
       product_stages: ["idea", "prototype", "mvp", "product"],
       roles: ["developer", "marketer", "founder", "product-manager"],
       salary_range: [

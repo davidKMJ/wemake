@@ -14,15 +14,56 @@ import { Input } from "~/common/components/ui/input";
 import { PostCard } from "../components/post-card";
 import { z } from "zod";
 import { getPosts, getTopics } from "../queries";
+import { Suspense } from "react";
+import { makeSSRClient } from "~/supa-client";
 
 export const meta: Route.MetaFunction = () => {
     return [{ title: "Community | wemake" }];
 };
 
-export const loader = async () => {
-    const topics = await getTopics();
-    const posts = await getPosts();
+export const loader = async ({ request }: Route.LoaderArgs) => {
+    const { client, headers } = makeSSRClient(request);
+    // const topics = await getTopics();
+    // const posts = await getPosts();
+    // const [topics, posts] = await Promise.all([getTopics(), getPosts()]);
+    // const topics = getTopics();
+    // const posts = getPosts();
+    // return { topics, posts };
+
+    const url = new URL(request.url);
+    const { success, data: parsedData } = searchParamsSchema.safeParse(
+        Object.fromEntries(url.searchParams)
+    );
+    if (!success) {
+        throw data(
+            {
+                error_code: "invalid_search_params",
+                message: "Invalid search params",
+            },
+            { status: 400 }
+        );
+    }
+
+    const [topics, posts] = await Promise.all([
+        getTopics(client),
+        getPosts(client, {
+            limit: 20,
+            sorting: parsedData.sorting,
+            period: parsedData.period,
+            keyword: parsedData.keyword,
+            topic: parsedData.topic,
+        }),
+    ]);
     return { topics, posts };
+};
+
+export const clientLoader = async ({
+    serverLoader,
+}: Route.ClientLoaderArgs) => {
+    // track analytics
+    // const serverData = await serverLoader();
+    // const [topics, posts] = await Promise.all([getTopics(), getPosts()]);
+    // return { topics, posts };
 };
 
 const searchParamsSchema = z.object({
@@ -129,44 +170,61 @@ export default function CommunityPage({ loaderData }: Route.ComponentProps) {
                             </Link>
                         </Button>
                     </div>
-                    <div className="space-y-5">
-                        {loaderData.posts.map((post) => (
-                            <PostCard
-                                key={post.post_id}
-                                id={post.post_id}
-                                title={post.title}
-                                author={post.author_name}
-                                authorAvatarUrl={post.author_avatar}
-                                category={post.topic_name}
-                                postedAt={post.created_at}
-                                votesCount={post.upvotes}
-                                expanded
-                            />
-                        ))}
-                    </div>
+                    <Suspense fallback={<div>Loading...</div>}>
+                        <Await resolve={loaderData.posts}>
+                            {(posts) => (
+                                <div className="space-y-5">
+                                    {posts.map((post) => (
+                                        <PostCard
+                                            key={post.post_id}
+                                            id={post.post_id}
+                                            title={post.title}
+                                            author={post.author_name}
+                                            authorAvatarUrl={post.author_avatar}
+                                            category={post.topic_name}
+                                            postedAt={post.created_at}
+                                            votesCount={post.upvotes}
+                                            isUpvoted={post.is_upvoted}
+                                            expanded
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                        </Await>
+                    </Suspense>
                 </div>
                 <aside className="col-span-2 space-y-5">
                     <span className="text-sm font-bold text-muted-foreground uppercase">
                         Topics
                     </span>
-                    <div className="flex flex-col gap-2 items-start mt-2">
-                        {loaderData.topics.map((topic) => (
-                            <Button
-                                key={topic.topicId}
-                                variant={"link"}
-                                asChild
-                            >
-                                <Link
-                                    to={`/community?topic=${topic.slug}`}
-                                    preventScrollReset
-                                >
-                                    {topic.name}
-                                </Link>
-                            </Button>
-                        ))}
-                    </div>
+                    <Suspense fallback={<div>Loading...</div>}>
+                        <Await resolve={loaderData.topics}>
+                            {(topics) => (
+                                <div className="flex flex-col gap-2 items-start mt-2">
+                                    {topics.map((topic) => (
+                                        <Button
+                                            key={topic.topicId}
+                                            variant={"link"}
+                                            asChild
+                                        >
+                                            <Link
+                                                to={`/community?topic=${topic.slug}`}
+                                                preventScrollReset
+                                            >
+                                                {topic.name}
+                                            </Link>
+                                        </Button>
+                                    ))}
+                                </div>
+                            )}
+                        </Await>
+                    </Suspense>
                 </aside>
             </div>
         </div>
     );
+}
+
+export function HydrateFallback() {
+    return <div>Loading...</div>;
 }

@@ -29,8 +29,8 @@ export function TeamCard({
     description,
 }: TeamCardProps) {
     return (
-        <Link to={`/teams/${id}`}>
-            <Card className="bg-transparent hover:bg-card/50 transition-colors">
+        <Link to={`/teams/${id}`} className="block">
+            <Card className="bg-transparent hover:bg-card/50 flex flex-col justify-between transition-colors h-full">
                 <CardHeader className="flex flex-row items-center gap-2">
                     <CardTitle className="text-base leading-loose">
                         <Badge

@@ -1,7 +1,10 @@
-import { Form } from "react-router";
+import { Form, useNavigation, redirect } from "react-router";
 import type { Route } from "./+types/otp-start-page";
 import { Button } from "~/common/components/ui/button";
 import InputPair from "~/common/components/input-pair";
+import { makeSSRClient } from "~/supa-client";
+import z from "zod";
+import { LoaderCircle } from "lucide-react";
 
 export const meta: Route.MetaFunction = () => {
     return [
@@ -9,9 +12,40 @@ export const meta: Route.MetaFunction = () => {
         { name: "description", content: "Start OTP verification" },
     ];
 };
+const formSchema = z.object({
+    email: z.email(),
+});
 
+export const action = async ({ request }: Route.ActionArgs) => {
+    const formData = await request.formData();
+    const { data, success } = formSchema.safeParse(
+        Object.fromEntries(formData)
+    );
+    if (!success) {
+        return { error: "Invalid email address" };
+    }
+    const { email } = data;
 
-export default function OtpStartPage() {
+    const { client } = makeSSRClient(request);
+
+    const { error } = await client.auth.signInWithOtp({
+        email,
+        options: {
+            shouldCreateUser: true,
+        },
+    });
+
+    if (error) {
+        return { error: "Failed to send OTP" };
+    }
+
+    return redirect(`/auth/otp/complete?email=${email}`);
+};
+
+export default function OtpStartPage({ actionData }: Route.ComponentProps) {
+    const navigation = useNavigation();
+    const isSubmitting =
+        navigation.state === "submitting" || navigation.state === "loading";
     return (
         <div className="flex flex-col items-center justify-center h-full relative">
             <div className="flex flex-col items-center justify-center gap-10 max-w-lg w-full">
@@ -34,8 +68,21 @@ export default function OtpStartPage() {
                         placeholder="Enter your name"
                         required
                     />
-                    <Button type="submit" className="w-full">
-                        Send OTP
+                    {actionData && "error" in actionData && (
+                        <p className="text-red-500 text-sm">
+                            {actionData.error}
+                        </p>
+                    )}
+                    <Button
+                        className="w-full"
+                        type="submit"
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? (
+                            <LoaderCircle className="animate-spin" />
+                        ) : (
+                            "Send OTP"
+                        )}
                     </Button>
                 </Form>
             </div>

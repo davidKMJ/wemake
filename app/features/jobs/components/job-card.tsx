@@ -8,6 +8,7 @@ import {
     CardTitle,
 } from "~/common/components/ui/card";
 import { Badge } from "~/common/components/ui/badge";
+import { DateTime } from "luxon";
 
 interface JobCardProps {
     id: number;
@@ -47,7 +48,7 @@ export function JobCard({
                                 {company}
                             </span>
                             <span className="text-xs text-muted-foreground">
-                                {postedAt}
+                                {DateTime.fromISO(postedAt).toRelative()}
                             </span>
                         </div>
                     </div>
@@ -55,8 +56,12 @@ export function JobCard({
                 </CardHeader>
                 <CardContent>
                     <div className="flex gap-2">
-                        <Badge variant="outline">{type}</Badge>
-                        <Badge variant="outline">{positionLocation}</Badge>
+                        <Badge variant="outline" className="capitalize">
+                            {type}
+                        </Badge>
+                        <Badge variant="outline" className="capitalize">
+                            {positionLocation}
+                        </Badge>
                     </div>
                 </CardContent>
                 <CardFooter className="flex justify-between">

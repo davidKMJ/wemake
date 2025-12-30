@@ -35,7 +35,7 @@ export const products = pgTable(
             .notNull(),
         category_id: bigint({ mode: "number" }).references(
             () => categories.category_id,
-            { onDelete: "set null" }
+            { onDelete: "set null" },
         ),
         created_at: timestamp().notNull().defaultNow(),
         updated_at: timestamp().notNull().defaultNow(),
@@ -46,7 +46,7 @@ export const products = pgTable(
             foreignColumns: [profiles.profile_id],
             name: "products_to_profiles",
         }),
-    ]
+    ],
 );
 
 export const categories = pgTable("categories", {
@@ -64,7 +64,7 @@ export const product_upvotes = pgTable(
     {
         product_id: bigint({ mode: "number" }).references(
             () => products.product_id,
-            { onDelete: "cascade" }
+            { onDelete: "cascade" },
         ),
         profile_id: uuid()
             .references(() => profiles.profile_id, {
@@ -72,7 +72,7 @@ export const product_upvotes = pgTable(
             })
             .notNull(),
     },
-    (table) => [primaryKey({ columns: [table.product_id, table.profile_id] })]
+    (table) => [primaryKey({ columns: [table.product_id, table.profile_id] })],
 );
 
 export const reviews = pgTable(
@@ -94,5 +94,5 @@ export const reviews = pgTable(
         created_at: timestamp().notNull().defaultNow(),
         updated_at: timestamp().notNull().defaultNow(),
     },
-    (table) => [check("rating_check", sql`${table.rating} BETWEEN 1 AND 5`)]
+    (table) => [check("rating_check", sql`${table.rating} BETWEEN 1 AND 5`)],
 );

@@ -6,12 +6,36 @@ import SelectPair from "~/common/components/select-pair";
 import { JOB_TYPES, LOCATION_TYPES, SALARY_RANGE } from "../constants";
 import { Button } from "~/common/components/ui/button";
 import { z } from "zod";
+import { makeSSRClient } from "~/supa-client";
+import { getLoggedInUserId } from "~/features/auth/queries";
+import { createJob } from "../mutations";
 
 export const meta: Route.MetaFunction = ({ params, data }) => {
     return [
         { title: "Submit Job | wemake" },
         { name: "description", content: "Submit your job to our community" },
     ];
+};
+
+export const loader = async ({ request }: Route.LoaderArgs) => {
+    const { client } = makeSSRClient(request);
+    await getLoggedInUserId(client);
+};
+
+export const action = async ({ request }: Route.ActionArgs) => {
+    const { client } = makeSSRClient(request);
+    await getLoggedInUserId(client);
+    const formData = await request.formData();
+    const { success, data, error } = formSchema.safeParse(
+        Object.fromEntries(formData)
+    );
+    if (!success) {
+        return {
+            fieldErrors: error.flatten().fieldErrors,
+        };
+    }
+    const { job_id } = await createJob(client, data);
+    return redirect(`/jobs/${job_id}`);
 };
 
 export const formSchema = z.object({
@@ -37,10 +61,7 @@ export const formSchema = z.object({
     salary: z.enum(SALARY_RANGE),
 });
 
-export const action = async ({ request }: Route.ActionArgs) => {
-};
-
-export default function SubmitJobPage() {
+export default function SubmitJobPage({ actionData }: Route.ComponentProps) {
     return (
         <div>
             <HeroSection
@@ -62,6 +83,11 @@ export default function SubmitJobPage() {
                         type="text"
                         required
                     />
+                    {actionData?.fieldErrors?.position && (
+                        <p className="text-sm text-destructive">
+                            {actionData.fieldErrors.position}
+                        </p>
+                    )}
                     <InputPair
                         id="overview"
                         label="Overview"
@@ -73,6 +99,11 @@ export default function SubmitJobPage() {
                         textArea
                         required
                     />
+                    {actionData?.fieldErrors?.overview && (
+                        <p className="text-sm text-destructive">
+                            {actionData.fieldErrors.overview}
+                        </p>
+                    )}
                     <InputPair
                         id="responsibilities"
                         label="Responsibilities"
@@ -84,6 +115,11 @@ export default function SubmitJobPage() {
                         textArea
                         required
                     />
+                    {actionData?.fieldErrors?.responsibilities && (
+                        <p className="text-sm text-destructive">
+                            {actionData.fieldErrors.responsibilities}
+                        </p>
+                    )}
                     <InputPair
                         id="qualifications"
                         label="Qualifications"
@@ -95,6 +131,11 @@ export default function SubmitJobPage() {
                         textArea
                         required
                     />
+                    {actionData?.fieldErrors?.qualifications && (
+                        <p className="text-sm text-destructive">
+                            {actionData.fieldErrors.qualifications}
+                        </p>
+                    )}
                     <InputPair
                         id="benefits"
                         label="Benefits"
@@ -106,6 +147,11 @@ export default function SubmitJobPage() {
                         textArea
                         required
                     />
+                    {actionData?.fieldErrors?.benefits && (
+                        <p className="text-sm text-destructive">
+                            {actionData.fieldErrors.benefits}
+                        </p>
+                    )}
                     <InputPair
                         id="skills"
                         label="Skills"
@@ -117,6 +163,11 @@ export default function SubmitJobPage() {
                         textArea
                         required
                     />
+                    {actionData?.fieldErrors?.skills && (
+                        <p className="text-sm text-destructive">
+                            {actionData.fieldErrors.skills}
+                        </p>
+                    )}
                     <InputPair
                         id="companyName"
                         label="Company Name"
@@ -127,6 +178,11 @@ export default function SubmitJobPage() {
                         type="text"
                         required
                     />
+                    {actionData?.fieldErrors?.companyName && (
+                        <p className="text-sm text-destructive">
+                            {actionData.fieldErrors.companyName}
+                        </p>
+                    )}
                     <InputPair
                         id="companyLogoUrl"
                         label="Company Logo URL"
@@ -137,6 +193,11 @@ export default function SubmitJobPage() {
                         type="text"
                         required
                     />
+                    {actionData?.fieldErrors?.companyLogoUrl && (
+                        <p className="text-sm text-destructive">
+                            {actionData.fieldErrors.companyLogoUrl}
+                        </p>
+                    )}
                     <InputPair
                         id="companyLocation"
                         label="Company Location"
@@ -147,6 +208,11 @@ export default function SubmitJobPage() {
                         type="text"
                         required
                     />
+                    {actionData?.fieldErrors?.companyLocation && (
+                        <p className="text-sm text-destructive">
+                            {actionData.fieldErrors.companyLocation}
+                        </p>
+                    )}
                     <InputPair
                         id="applyUrl"
                         label="Apply URL"
@@ -155,6 +221,11 @@ export default function SubmitJobPage() {
                         maxLength={400}
                         description="(400 characters max)"
                     />
+                    {actionData?.fieldErrors?.applyUrl && (
+                        <p className="text-sm text-destructive">
+                            {actionData.fieldErrors.applyUrl}
+                        </p>
+                    )}
                     <SelectPair
                         label="Job Type"
                         description="Select the type of job"
@@ -166,6 +237,11 @@ export default function SubmitJobPage() {
                             label: jobType.label,
                         }))}
                     />
+                    {actionData?.fieldErrors?.jobType && (
+                        <p className="text-sm text-destructive">
+                            {actionData.fieldErrors.jobType}
+                        </p>
+                    )}
                     <SelectPair
                         label="Job Location"
                         description="Select the location of the job"
@@ -177,6 +253,11 @@ export default function SubmitJobPage() {
                             label: location.label,
                         }))}
                     />
+                    {actionData?.fieldErrors?.jobLocation && (
+                        <p className="text-sm text-destructive">
+                            {actionData.fieldErrors.jobLocation}
+                        </p>
+                    )}
                     <SelectPair
                         label="Salary"
                         description="Select the salary of the job"
@@ -188,6 +269,11 @@ export default function SubmitJobPage() {
                             label: salary,
                         }))}
                     />
+                    {actionData?.fieldErrors?.salary && (
+                        <p className="text-sm text-destructive">
+                            {actionData.fieldErrors.salary}
+                        </p>
+                    )}
                 </div>
                 <Button type="submit" className="w-full max-w-sm">
                     Post job for $100

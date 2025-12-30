@@ -1,9 +1,9 @@
 import {
-    type RouteConfig,
     index,
     layout,
     prefix,
     route,
+    type RouteConfig,
 } from "@react-router/dev/routes";
 
 export default [
@@ -15,24 +15,24 @@ export default [
             layout("features/products/layouts/leaderboard-layout.tsx", [
                 route(
                     "/yearly/:year",
-                    "features/products/pages/yearly-leaderboard-page.tsx"
+                    "features/products/pages/yearly-leaderboard-page.tsx",
                 ),
                 route(
                     "/monthly/:year/:month",
-                    "features/products/pages/monthly-leaderboard-page.tsx"
+                    "features/products/pages/monthly-leaderboard-page.tsx",
                 ),
                 route(
                     "/weekly/:year/:week",
-                    "features/products/pages/weekly-leaderboard-page.tsx"
+                    "features/products/pages/weekly-leaderboard-page.tsx",
                 ),
                 route(
                     "/daily/:year/:month/:day",
-                    "features/products/pages/daily-leaderboard-page.tsx"
+                    "features/products/pages/daily-leaderboard-page.tsx",
                 ),
             ]),
             route(
                 "/:period",
-                "features/products/pages/leaderboards-redirection-page.tsx"
+                "features/products/pages/leaderboards-redirection-page.tsx",
             ),
         ]),
         ...prefix("/categories", [
@@ -47,15 +47,15 @@ export default [
             layout("features/products/layouts/product-overview-layout.tsx", [
                 route(
                     "/overview",
-                    "features/products/pages/product-overview-page.tsx"
+                    "features/products/pages/product-overview-page.tsx",
                 ),
                 route(
                     "/reviews",
-                    "features/products/pages/product-reviews-page.tsx"
+                    "features/products/pages/product-reviews-page.tsx",
                 ),
                 route(
                     "/visit",
-                    "features/products/pages/product-visit-page.tsx"
+                    "features/products/pages/product-visit-page.tsx",
                 ),
             ]),
         ]),
@@ -63,6 +63,7 @@ export default [
     ...prefix("/ideas", [
         index("features/ideas/pages/ideas-page.tsx"),
         route("/:ideaId", "features/ideas/pages/idea-page.tsx"),
+        route("/generate", "features/ideas/pages/generate-idea-page.tsx"),
     ]),
     ...prefix("/jobs", [
         index("features/jobs/pages/jobs-page.tsx"),
@@ -82,7 +83,7 @@ export default [
                 route("/start", "features/auth/pages/social-start-page.tsx"),
                 route(
                     "/complete",
-                    "features/auth/pages/social-complete-page.tsx"
+                    "features/auth/pages/social-complete-page.tsx",
                 ),
             ]),
         ]),
@@ -90,6 +91,10 @@ export default [
     ...prefix("/community", [
         index("features/community/pages/community-page.tsx"),
         route("/:postId", "features/community/pages/post-page.tsx"),
+        route(
+            "/:postId/upvote",
+            "features/community/pages/upvote-post-page.tsx",
+        ),
         route("/submit", "features/community/pages/submit-post-page.tsx"),
     ]),
     ...prefix("/teams", [
@@ -103,11 +108,11 @@ export default [
                 index("features/users/pages/dashboard-page.tsx"),
                 route(
                     "/ideas",
-                    "features/users/pages/dashboard-ideas-page.tsx"
+                    "features/users/pages/dashboard-ideas-page.tsx",
                 ),
                 route(
                     "/products/:productId",
-                    "features/users/pages/dashboard-product-page.tsx"
+                    "features/users/pages/dashboard-product-page.tsx",
                 ),
             ]),
         ]),
@@ -120,13 +125,17 @@ export default [
         route("/profile", "features/users/pages/my-profile-page.tsx"),
         route("/settings", "features/users/pages/settings-page.tsx"),
         route("/notifications", "features/users/pages/notifications-page.tsx"),
+        route(
+            "/notifications/:notificationId/see",
+            "features/users/pages/see-notification-page.tsx",
+        ),
     ]),
     ...prefix("/users/:username", [
         layout("features/users/layouts/profile-layout.tsx", [
             index("features/users/pages/profile-page.tsx"),
             route(
                 "/products",
-                "features/users/pages/profile-products-page.tsx"
+                "features/users/pages/profile-products-page.tsx",
             ),
             route("/posts", "features/users/pages/profile-posts-page.tsx"),
         ]),

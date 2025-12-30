@@ -1,6 +1,8 @@
 import { HeroSection } from "~/common/components/hero-section";
 import type { Route } from "./+types/categories-page";
 import { CategoryCard } from "../components/category-card";
+import { getCategories } from "../queries";
+import { makeSSRClient } from "~/supa-client";
 
 export const meta: Route.MetaFunction = () => {
     return [
@@ -10,13 +12,8 @@ export const meta: Route.MetaFunction = () => {
 };
 
 export const loader = async ({ request }: Route.LoaderArgs) => {
-    const categories = [
-        {
-            id: 1,
-            name: "Category 1",
-            description: "Category 1 description",
-        },
-    ];
+    const { client, headers } = makeSSRClient(request);
+    const categories = await getCategories(client);
     return { categories };
 };
 
@@ -28,11 +25,12 @@ export default function CategoriesPage({ loaderData }: Route.ComponentProps) {
                 subtitle="Browse products by category"
             />
             <div className="grid grid-cols-4 gap-10 px-10">
-                {Array.from({ length: 10 }).map((_, index) => (
+                {loaderData.categories.map((category) => (
                     <CategoryCard
-                        id={index}
-                        name={`Category ${index}`}
-                        description={`Category ${index} description`}
+                        key={category.category_id}
+                        id={category.category_id}
+                        name={category.name}
+                        description={category.description}
                     />
                 ))}
             </div>

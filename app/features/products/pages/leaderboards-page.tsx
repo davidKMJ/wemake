@@ -3,125 +3,153 @@ import type { Route } from "./+types/leaderboards-page";
 import { Button } from "~/common/components/ui/button";
 import { ProductCard } from "../components/product-card";
 import { Link } from "react-router";
+import { getProductsByDateRange } from "../queries";
 import { DateTime } from "luxon";
+import { makeSSRClient } from "~/supa-client";
 
 export const meta: Route.MetaFunction = () => {
     return [
         { title: "Leaderboards | wemake" },
-        {
-            name: "description",
-            content: "See the top performers in our community",
-        },
+        { name: "description", content: "Top products leaderboard" },
     ];
 };
 
-export default function LeaderboardsPage({ loaderData }: Route.ComponentProps) {
+export const loader = async ({ request }: Route.LoaderArgs) => {
+    const { client, headers } = makeSSRClient(request);
+    const [dailyProducts, weeklyProducts, monthlyProducts, yearlyProducts] =
+        await Promise.all([
+            getProductsByDateRange(client, {
+                startDate: DateTime.now().startOf("day"),
+                endDate: DateTime.now().endOf("day"),
+                limit: 7,
+            }),
+            getProductsByDateRange(client, {
+                startDate: DateTime.now().startOf("week"),
+                endDate: DateTime.now().endOf("week"),
+                limit: 7,
+            }),
+            getProductsByDateRange(client, {
+                startDate: DateTime.now().startOf("month"),
+                endDate: DateTime.now().endOf("month"),
+                limit: 7,
+            }),
+            getProductsByDateRange(client, {
+                startDate: DateTime.now().startOf("year"),
+                endDate: DateTime.now().endOf("year"),
+                limit: 7,
+            }),
+        ]);
+    return { dailyProducts, weeklyProducts, monthlyProducts, yearlyProducts };
+};
+
+export default function LeaderboardPage({ loaderData }: Route.ComponentProps) {
     return (
         <div className="space-y-20">
             <HeroSection
                 title="Leaderboards"
-                subtitle="See the top performers in our community."
+                subtitle="The most popular products on wemake"
             />
-            <div className="grid grid-cols-3 gap-4 px-20">
+            <div className="grid grid-cols-3 gap-4">
                 <div>
-                    <h2 className="text-3xl font-bold leading-tight">
+                    <h2 className="text-3xl font-bold leading-tight tracking-tight">
                         Daily Leaderboard
                     </h2>
-                    <p className="text-md font-light text-foreground">
-                        The most popular products made by our community today.
+                    <p className="text-xl font-light text-foreground">
+                        The most popular products on wemake by day.
                     </p>
                 </div>
-                {Array.from({ length: 10 }).map((_, index) => (
+                {loaderData.dailyProducts.map((product) => (
                     <ProductCard
-                        id={index}
-                        name={`Product ${index}`}
-                        description={`Product ${index} description`}
-                        reviews={`100`}
-                        views={`100`}
-                        upvotes={`100`}
+                        key={product.product_id.toString()}
+                        id={product.product_id}
+                        name={product.name}
+                        description={product.tagline}
+                        reviews={product.reviews}
+                        views={product.views}
+                        upvotes={product.upvotes}
                     />
                 ))}
                 <Button variant="link" asChild className="text-lg self-center">
                     <Link to="/products/leaderboards/daily">
-                        View all products &rarr;
+                        Explore all products &rarr;
                     </Link>
                 </Button>
             </div>
-            <div className="grid grid-cols-3 gap-4 px-20">
+            <div className="grid grid-cols-3 gap-4">
                 <div>
-                    <h2 className="text-3xl font-bold leading-tight">
+                    <h2 className="text-3xl font-bold leading-tight tracking-tight">
                         Weekly Leaderboard
                     </h2>
-                    <p className="text-md font-light text-foreground">
-                        The most popular products made by our community this
-                        week.
+                    <p className="text-xl font-light text-foreground">
+                        The most popular products on wemake by week.
                     </p>
                 </div>
-                {Array.from({ length: 10 }).map((_, index) => (
+                {loaderData.weeklyProducts.map((product) => (
                     <ProductCard
-                        id={index}
-                        name={`Product ${index}`}
-                        description={`Product ${index} description`}
-                        reviews={`100`}
-                        views={`100`}
-                        upvotes={`100`}
+                        key={product.product_id.toString()}
+                        id={product.product_id}
+                        name={product.name}
+                        description={product.tagline}
+                        reviews={product.reviews}
+                        views={product.views}
+                        upvotes={product.upvotes}
                     />
                 ))}
                 <Button variant="link" asChild className="text-lg self-center">
                     <Link to="/products/leaderboards/weekly">
-                        View all products &rarr;
+                        Explore all products &rarr;
                     </Link>
                 </Button>
             </div>
-            <div className="grid grid-cols-3 gap-4 px-20">
+            <div className="grid grid-cols-3 gap-4">
                 <div>
-                    <h2 className="text-3xl font-bold leading-tight">
+                    <h2 className="text-3xl font-bold leading-tight tracking-tight">
                         Monthly Leaderboard
                     </h2>
-                    <p className="text-md font-light text-foreground">
-                        The most popular products made by our community this
-                        month.
+                    <p className="text-xl font-light text-foreground">
+                        The most popular products on wemake by month.
                     </p>
                 </div>
-                {Array.from({ length: 10 }).map((_, index) => (
+                {loaderData.monthlyProducts.map((product) => (
                     <ProductCard
-                        id={index}
-                        name={`Product ${index}`}
-                        description={`Product ${index} description`}
-                        reviews={`100`}
-                        views={`100`}
-                        upvotes={`100`}
+                        key={product.product_id.toString()}
+                        id={product.product_id}
+                        name={product.name}
+                        description={product.tagline}
+                        reviews={product.reviews}
+                        views={product.views}
+                        upvotes={product.upvotes}
                     />
                 ))}
                 <Button variant="link" asChild className="text-lg self-center">
                     <Link to="/products/leaderboards/monthly">
-                        View all products &rarr;
+                        Explore all products &rarr;
                     </Link>
                 </Button>
             </div>
-            <div className="grid grid-cols-3 gap-4 px-20">
+            <div className="grid grid-cols-3 gap-4">
                 <div>
-                    <h2 className="text-3xl font-bold leading-tight">
+                    <h2 className="text-3xl font-bold leading-tight tracking-tight">
                         Yearly Leaderboard
                     </h2>
-                    <p className="text-md font-light text-foreground">
-                        The most popular products made by our community this
-                        year.
+                    <p className="text-xl font-light text-foreground">
+                        The most popular products on wemake by year.
                     </p>
                 </div>
-                {Array.from({ length: 10 }).map((_, index) => (
+                {loaderData.yearlyProducts.map((product) => (
                     <ProductCard
-                        id={index}
-                        name={`Product ${index}`}
-                        description={`Product ${index} description`}
-                        reviews={`100`}
-                        views={`100`}
-                        upvotes={`100`}
+                        key={product.product_id.toString()}
+                        id={product.product_id}
+                        name={product.name}
+                        description={product.tagline}
+                        reviews={product.reviews}
+                        views={product.views}
+                        upvotes={product.upvotes}
                     />
                 ))}
                 <Button variant="link" asChild className="text-lg self-center">
                     <Link to="/products/leaderboards/yearly">
-                        View all products &rarr;
+                        Explore all products &rarr;
                     </Link>
                 </Button>
             </div>

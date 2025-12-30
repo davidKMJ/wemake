@@ -1,8 +1,9 @@
-export default function LogoutPage() {
-    return (
-        <div>
-            <h1 className="text-3xl font-bold text-center mb-8">Logout</h1>
-            <p>Logout page content</p>
-        </div>
-    );
-}
+import { makeSSRClient } from "~/supa-client";
+import type { Route } from "./+types/logout-page";
+import { redirect } from "react-router";
+
+export const loader = async ({ request }: Route.LoaderArgs) => {
+    const { client, headers } = makeSSRClient(request);
+    await client.auth.signOut();
+    return redirect("/", { headers });
+};

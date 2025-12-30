@@ -6,6 +6,8 @@ import { cn } from "~/lib/utils";
 import { HeroSection } from "~/common/components/hero-section";
 import type { Route } from "./+types/jobs-page";
 import { z } from "zod";
+import { getJobs } from "../queries";
+import { makeSSRClient } from "~/supa-client";
 
 export const meta: Route.MetaFunction = () => {
     return [
@@ -16,10 +18,10 @@ export const meta: Route.MetaFunction = () => {
 
 const searchParamsSchema = z.object({
     type: z
-        .enum(JOB_TYPES.map((type) => type.value) as [string, ...string[]])
+        .enum(JOB_TYPES.map((type) => type.value))
         .optional(),
     location: z
-        .enum(LOCATION_TYPES.map((type) => type.value) as [string, ...string[]])
+        .enum(LOCATION_TYPES.map((type) => type.value))
         .optional(),
     salary: z.enum(SALARY_RANGE).optional(),
 });
@@ -38,25 +40,21 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
             { status: 400 }
         );
     }
-    const jobs = Array.from({ length: 10 }).map((_, index) => ({
-        job_id: index,
-        company_name: `Company ${index}`,
-        company_logo: `https://github.com/shadcn.png`,
-        company_location: `Company Location ${index}`,
-        position: `Position ${index}`,
-        created_at: `2025-01-01`,
-        job_type: `Job Type ${index}`,
-        location: `Location ${index}`,
-        salary_range: `Salary Range ${index}`,
-    }));
-    return {jobs: jobs};
+    const { client, headers } = makeSSRClient(request);
+    const jobs = await getJobs(client, {
+        limit: 40,
+        location: parsedData.location,
+        type: parsedData.type,
+        salary: parsedData.salary,
+    });
+    return { jobs };
 };
 
 export default function JobsPage({ loaderData }: Route.ComponentProps) {
     const [searchParams, setSearchParams] = useSearchParams();
     const onFilterClick = (key: string, value: string) => {
         searchParams.set(key, value);
-        setSearchParams(searchParams, {preventScrollReset: true});
+        setSearchParams(searchParams, { preventScrollReset: true });
     };
     return (
         <div className="space-y-20">

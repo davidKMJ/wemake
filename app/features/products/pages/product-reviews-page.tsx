@@ -13,6 +13,12 @@ import { useOutletContext } from "react-router";
 import { z } from "zod";
 import type { Route } from "./+types/product-reviews-page";
 import { DateTime } from "luxon";
+import { getReviews } from "../queries";
+import { makeSSRClient } from "~/supa-client";
+import { getLoggedInUserId } from "~/features/auth/queries";
+import { createProductReview } from "../mutations";
+import { useState } from "react";
+import { useEffect } from "react";
 
 export function meta() {
     return [
@@ -21,10 +27,38 @@ export function meta() {
     ];
 }
 
-export const loader = async ({ request, params }: Route.LoaderArgs) => {
+export const loader = async ({ params, request }: Route.LoaderArgs) => {
+    const { client, headers } = makeSSRClient(request);
+    const reviews = await getReviews(client, Number(params.productId));
+    return { reviews };
 };
 
+const formSchema = z.object({
+    review: z.string().min(1),
+    rating: z.coerce.number().min(1).max(5),
+});
+
 export const action = async ({ request, params }: Route.ActionArgs) => {
+    const { client, headers } = makeSSRClient(request);
+    const userId = await getLoggedInUserId(client);
+    const formData = await request.formData();
+    const { success, error, data } = formSchema.safeParse(
+        Object.fromEntries(formData)
+    );
+    if (!success) {
+        return {
+            formErrors: error.flatten().fieldErrors,
+        };
+    }
+    await createProductReview(client, {
+        productId: Number(params.productId),
+        review: data.review,
+        rating: data.rating,
+        userId,
+    });
+    return {
+        ok: true,
+    };
 };
 
 export default function ProductReviewsPage({
@@ -34,8 +68,14 @@ export default function ProductReviewsPage({
     const { review_count } = useOutletContext<{
         review_count: string;
     }>();
+    const [open, setOpen] = useState(false);
+    useEffect(() => {
+        if (actionData?.ok) {
+            setOpen(false);
+        }
+    }, [actionData]);
     return (
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
             <div className="space-y-10 max-w-2xl">
                 <div className="flex justify-between items-center">
                     <h2 className="text-2xl font-bold">
@@ -47,15 +87,15 @@ export default function ProductReviewsPage({
                     </DialogTrigger>
                 </div>
                 <div className="space-y-20">
-                    {Array.from({ length: 10 }).map((_, index) => (
+                    {loaderData.reviews.map((review) => (
                         <ReviewCard
-                            key={index}
-                            authorName={`User ${index}`}
-                            authorUsername={`user${index}`}
-                            authorAvatarUrl={`https://github.com/shadcn.png`}
-                            rating={index}
-                            content={`Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.`}
-                            postedAt={DateTime.now().minus({ days: index }).toISO()}
+                            key={review.review_id}
+                            authorName={review.user.name}
+                            authorUsername={review.user.username}
+                            authorAvatarUrl={review.user.avatar}
+                            rating={review.rating}
+                            content={review.review}
+                            postedAt={review.created_at}
                         />
                     ))}
                 </div>

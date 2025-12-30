@@ -26,7 +26,7 @@ export default function ProductPagination({
         // setSearchParams(searchParams, {
         //     preventScrollReset: true,
         // });
-        setSearchParams(searchParams);
+        setSearchParams(searchParams, { preventScrollReset: true });
     };
     return (
         <Pagination>

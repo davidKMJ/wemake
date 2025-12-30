@@ -11,6 +11,8 @@ import {
 import { ChartContainer } from "~/common/components/ui/chart";
 import { CartesianGrid, LineChart, XAxis } from "recharts";
 import type { Route } from "./+types/dashboard-page";
+import { getLoggedInUserId } from "~/features/auth/queries";
+import { makeSSRClient } from "~/supa-client";
 
 export const meta: Route.MetaFunction = () => {
     return [{ title: "Dashboard | wemake" }];
@@ -22,6 +24,20 @@ const chartConfig = {
         color: "var(--chart-1)",
     },
 } satisfies ChartConfig;
+
+export const loader = async ({ request }: Route.LoaderArgs) => {
+    const { client } = makeSSRClient(request);
+    const userId = await getLoggedInUserId(client);
+    const { data, error } = await client.rpc("get_dashboard_stats", {
+        user_id: userId,
+    });
+    if (error) {
+        throw error;
+    }
+    return {
+        chartData: data,
+    };
+};
 
 export default function DashboardPage({ loaderData }: Route.ComponentProps) {
     return (
@@ -35,10 +51,7 @@ export default function DashboardPage({ loaderData }: Route.ComponentProps) {
                     <ChartContainer config={chartConfig}>
                         <LineChart
                             accessibilityLayer
-                            data={Array.from({ length: 10 }).map((_, index) => ({
-                                month: `Month ${index}`,
-                                views: index * 100,
-                            }))}
+                            data={loaderData.chartData}
                             margin={{
                                 left: 12,
                                 right: 12,
