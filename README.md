@@ -1,5 +1,5 @@
 # wemake
-![Static Badge](https://img.shields.io/badge/status-in_progress-orange?style=for-the-badge)
+![Static Badge](https://img.shields.io/badge/status-done-brighgreen?style=for-the-badge)
 ![Static Badge](https://img.shields.io/badge/type-learning_project-blue?style=for-the-badge)
 
 A platform for makers to showcase products, share ideas, discover jobs, form teams, and engage in community discussions, built with React Router v7, Supabase, and developed with Cursor AI assistance.
